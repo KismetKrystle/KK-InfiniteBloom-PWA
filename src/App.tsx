@@ -14,7 +14,7 @@ import { AdminProvider, useAdmin } from './contexts/AdminContext';
 // Protected Admin Route Component
 function ProtectedAdminRoute({ children }: { children: React.ReactNode }) {
   const { isAdmin, loading } = useAdmin();
-  
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -22,7 +22,7 @@ function ProtectedAdminRoute({ children }: { children: React.ReactNode }) {
       </div>
     );
   }
-  
+
   return isAdmin ? <>{children}</> : <AdminLogin />;
 }
 
@@ -40,48 +40,41 @@ export default function App() {
       <Router>
         <div className="scroll-container bg-background">
           <Routes>
-            {/* Admin Routes - Now the default view */}
-            <Route 
-              path="/" 
+            {/* Public Routes - Default view */}
+            <Route path="/" element={<LandingPage />} />
+            <Route
+              path="/admin"
               element={
                 <ProtectedAdminRoute>
                   <AdminDashboard />
                 </ProtectedAdminRoute>
-              } 
+              }
             />
-            <Route 
-              path="/admin" 
-              element={
-                <ProtectedAdminRoute>
-                  <AdminDashboard />
-                </ProtectedAdminRoute>
-              } 
-            />
-            <Route 
-              path="/admin/product/:productId" 
+            <Route
+              path="/admin/product/:productId"
               element={
                 <ProtectedAdminRoute>
                   <ProductDetailPage />
                 </ProtectedAdminRoute>
-              } 
+              }
             />
             <Route path="/admin/login" element={<AdminLogin />} />
-            
+
             {/* Public Routes - Now accessible via specific paths */}
             <Route path="/landing" element={<LandingPage />} />
-            <Route 
-              path="/access" 
+            <Route
+              path="/access"
               element={
-                <AccessPage 
-                  user={user} 
+                <AccessPage
+                  user={user}
                   setUser={setUser}
                   hasAccessCode={hasAccessCode}
                   setHasAccessCode={setHasAccessCode}
                 />
-              } 
+              }
             />
-            <Route 
-              path="/profile" 
+            <Route
+              path="/profile"
               element={
                 hasAccessCode || user ? (
                   <ProfilePage setUser={setUser} />
@@ -90,8 +83,8 @@ export default function App() {
                 )
               }
             />
-            <Route 
-              path="/flipbook" 
+            <Route
+              path="/flipbook"
               element={
                 user ? (
                   <FlipbookPage user={user} />
@@ -100,7 +93,7 @@ export default function App() {
                 )
               }
             />
-            
+
             {/* Catch-all route - redirects any unmatched paths to home */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

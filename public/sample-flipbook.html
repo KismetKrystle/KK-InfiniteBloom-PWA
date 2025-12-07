@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infinite Bloom - Sample</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .flipbook-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            max-width: 800px;
+            width: 100%;
+            min-height: 500px;
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .flipbook-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent 0%, #e0e0e0 20%, #e0e0e0 80%, transparent 100%);
+            z-index: 1;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .page-number {
+            color: #888;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .poem-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin: 10px 0;
+        }
+
+        .poem-content {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #444;
+            text-align: center;
+            margin: 30px 0;
+            font-style: italic;
+        }
+
+        .poem-line {
+            margin: 8px 0;
+            opacity: 0;
+            animation: slideIn 0.8s ease-out forwards;
+        }
+
+        .poem-line:nth-child(2) { animation-delay: 0.2s; }
+        .poem-line:nth-child(3) { animation-delay: 0.4s; }
+        .poem-line:nth-child(4) { animation-delay: 0.6s; }
+        .poem-line:nth-child(5) { animation-delay: 0.8s; }
+        .poem-line:nth-child(6) { animation-delay: 1.0s; }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .audio-player {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .play-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .play-button:hover {
+            background: #5a67d8;
+            transform: scale(1.05);
+        }
+
+        .audio-info {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        .nav-button {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            padding: 12px 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            color: #333;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-button:hover {
+            background: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .insight {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #e17055;
+        }
+
+        .insight-title {
+            font-weight: 600;
+            color: #2d3436;
+            margin-bottom: 10px;
+        }
+
+        .insight-text {
+            color: #2d3436;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="flipbook-container">
+        <!-- Page 1 -->
+        <div class="page active">
+            <div class="page-header">
+                <div class="page-number">Page 1 of 3</div>
+                <h1 class="poem-title">Welcome to Infinite Bloom</h1>
+            </div>
+            
+            <div class="poem-content">
+                <div class="poem-line">In the quiet spaces between heartbeats,</div>
+                <div class="poem-line">We discover the rhythm of our souls—</div>
+                <div class="poem-line">Each moment a petal unfurling,</div>
+                <div class="poem-line">Each breath a universe expanding.</div>
+                <div class="poem-line">This is where transformation begins:</div>
+                <div class="poem-line">In the sacred pause between who we were and who we are becoming.</div>
+            </div>
+
+            <div class="audio-player">
+                <div class="audio-controls">
+                    <button class="play-button" onclick="playAudio()">
+                        <span id="play-icon">▶</span>
+                    </button>
+                </div>
+                <div class="audio-info">Audio narration • 2:34</div>
+            </div>
+
+            <div class="insight">
+                <div class="insight-title">💡 Insight #1</div>
+                <div class="insight-text">
+                    The spaces between moments are often where the most profound transformations occur. 
+                    Like seeds in winter soil, our deepest growth happens in the quiet, unseen places.
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 2 -->
+        <div class="page">
+            <div class="page-header">
+                <div class="page-number">Page 2 of 3</div>
+                <h1 class="poem-title">The Dance of Becoming</h1>
+            </div>
+            
+            <div class="poem-content">
+                <div class="poem-line">We are not fixed stars in the sky,</div>
+                <div class="poem-line">But dancing flames in the wind—</div>
+                <div class="poem-line">Ever-changing, ever-growing,</div>
+                <div class="poem-line">Painting stories with our light.</div>
+                <div class="poem-line">Each flicker a choice,</div>
+                <div class="poem-line">Each glow a possibility realized.</div>
+            </div>
+
+            <div class="audio-player">
+                <div class="audio-controls">
+                    <button class="play-button" onclick="playAudio()">
+                        <span>▶</span>
+                    </button>
+                </div>
+                <div class="audio-info">Audio narration • 1:58</div>
+            </div>
+
+            <div class="insight">
+                <div class="insight-title">🌟 Insight #47</div>
+                <div class="insight-text">
+                    Identity is not a destination but a dance. We are constantly becoming, 
+                    reshaping ourselves with each experience, each choice, each moment of awareness.
+                </div>
+            </div>
+        </div>
+
+        <!-- Page 3 -->
+        <div class="page">
+            <div class="page-header">
+                <div class="page-number">Page 3 of 3</div>
+                <h1 class="poem-title">Continue Your Journey</h1>
+            </div>
+            
+            <div class="poem-content" style="text-align: center; padding: 40px 0;">
+                <div class="poem-line" style="font-size: 18px; color: #667eea; font-weight: 600;">
+                    This is just the beginning...
+                </div>
+                <div class="poem-line" style="margin-top: 30px; font-size: 14px; color: #888;">
+                    42 more poems await your discovery
+                </div>
+                <div class="poem-line" style="font-size: 14px; color: #888;">
+                    42 more audio experiences to guide you
+                </div>
+                <div class="poem-line" style="font-size: 14px; color: #888;">
+                    140 more insights to illuminate your path
+                </div>
+            </div>
+
+            <div style="text-align: center; margin: 40px 0;">
+                <button class="nav-button" onclick="window.close()" style="background: #667eea; color: white; border: none;">
+                    Return to Infinite Bloom
+                </button>
+            </div>
+
+            <div class="insight" style="background: linear-gradient(135deg, #a8e6cf 0%, #7fcdcd 100%); border-left-color: #26a69a;">
+                <div class="insight-title">✨ Ready to Begin?</div>
+                <div class="insight-text">
+                    Your journey of transformation awaits. Each poem, each audio experience, 
+                    and each insight has been carefully crafted to support your personal growth and awakening.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="navigation">
+        <button class="nav-button" id="prev-btn" onclick="previousPage()" disabled>← Previous</button>
+        <button class="nav-button" id="next-btn" onclick="nextPage()">Next →</button>
+    </div>
+
+    <script>
+        let currentPage = 0;
+        const pages = document.querySelectorAll('.page');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+
+        function showPage(pageIndex) {
+            pages.forEach((page, index) => {
+                page.classList.toggle('active', index === pageIndex);
+            });
+            
+            prevBtn.disabled = pageIndex === 0;
+            nextBtn.disabled = pageIndex === pages.length - 1;
+            
+            if (pageIndex === pages.length - 1) {
+                nextBtn.textContent = 'Complete';
+                nextBtn.onclick = () => window.close();
+            } else {
+                nextBtn.textContent = 'Next →';
+                nextBtn.onclick = nextPage;
+            }
+        }
+
+        function nextPage() {
+            if (currentPage < pages.length - 1) {
+                currentPage++;
+                showPage(currentPage);
+            }
+        }
+
+        function previousPage() {
+            if (currentPage > 0) {
+                currentPage--;
+                showPage(currentPage);
+            }
+        }
+
+        function playAudio() {
+            const playIcon = document.getElementById('play-icon');
+            if (playIcon) {
+                playIcon.textContent = playIcon.textContent === '▶' ? '⏸' : '▶';
+            }
+            
+            // Simulate audio playback
+            setTimeout(() => {
+                if (playIcon) playIcon.textContent = '▶';
+            }, 3000);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextPage();
+            if (e.key === 'ArrowLeft') previousPage();
+        });
+
+        // Initialize
+        showPage(0);
+    </script>
+</body>
+</html>
