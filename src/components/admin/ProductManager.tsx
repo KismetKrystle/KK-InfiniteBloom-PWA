@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+﻿import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
@@ -26,7 +26,7 @@ import {
   Star,
   RefreshCw
 } from 'lucide-react'
-import { toast } from 'sonner@2.0.3'
+import { toast } from 'sonner'
 
 interface Product {
   id: string
@@ -295,11 +295,11 @@ export default function ProductManager() {
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case 'ebook': return '📱'
-      case 'bundle': return '📦'
-      case 'physical': return '📚'
-      case 'audio': return '🎧'
-      default: return '📄'
+      case 'ebook': return 'ðŸ“±'
+      case 'bundle': return 'ðŸ“¦'
+      case 'physical': return 'ðŸ“š'
+      case 'audio': return 'ðŸŽ§'
+      default: return 'ðŸ“„'
     }
   }
 
@@ -363,11 +363,11 @@ export default function ProductManager() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ebook">📱 Digital/eBook</SelectItem>
-                      <SelectItem value="bundle">📦 Bundle</SelectItem>
-                      <SelectItem value="physical">📚 Physical Book</SelectItem>
-                      <SelectItem value="audio">🎧 Audio</SelectItem>
-                      <SelectItem value="other">📄 Other</SelectItem>
+                      <SelectItem value="ebook">ðŸ“± Digital/eBook</SelectItem>
+                      <SelectItem value="bundle">ðŸ“¦ Bundle</SelectItem>
+                      <SelectItem value="physical">ðŸ“š Physical Book</SelectItem>
+                      <SelectItem value="audio">ðŸŽ§ Audio</SelectItem>
+                      <SelectItem value="other">ðŸ“„ Other</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -422,8 +422,8 @@ export default function ProductManager() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="USD">USD ($)</SelectItem>
-                      <SelectItem value="EUR">EUR (€)</SelectItem>
-                      <SelectItem value="GBP">GBP (£)</SelectItem>
+                      <SelectItem value="EUR">EUR (â‚¬)</SelectItem>
+                      <SelectItem value="GBP">GBP (Â£)</SelectItem>
                       <SelectItem value="CAD">CAD (C$)</SelectItem>
                     </SelectContent>
                   </Select>

@@ -1,5 +1,7 @@
+'use client'
+
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -33,7 +35,7 @@ interface FlipbookPageProps {
 }
 
 export default function FlipbookPage({ user }: FlipbookPageProps) {
-  const navigate = useNavigate();
+  const router = useRouter();
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [userEmail, setUserEmail] = useState(user?.email || 'user@example.com');
   const [newEmail, setNewEmail] = useState('');
@@ -144,7 +146,7 @@ export default function FlipbookPage({ user }: FlipbookPageProps) {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate('/landing')}
+              onClick={() => router.push('/')}
               className="group"
             >
               <Home className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
@@ -246,7 +248,7 @@ export default function FlipbookPage({ user }: FlipbookPageProps) {
 
               <iframe
                 ref={(el) => setIframeRef(el)}
-                src="/book/index.html"
+                src={process.env.NEXT_PUBLIC_BOOK_URL ?? '/book/index.html'}
                 className="w-full h-full border-0"
                 title="Infinite Bloom Flipbook"
               />

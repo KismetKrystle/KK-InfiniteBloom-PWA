@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+﻿import React, { useState, useEffect } from 'react'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Label } from '../ui/label'
@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from '../ui/alert'
 import { supabase, Message, UserProfile } from '../../lib/supabase'
 import { Send, Reply, Trash2, RefreshCw, MessageSquare, User, Clock, Mail } from 'lucide-react'
 import { useIsMobile } from '../ui/use-mobile'
-import { toast } from 'sonner@2.0.3'
+import { toast } from 'sonner'
 
 interface EmailMessage {
   id: string

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+﻿import React, { useState, useEffect } from 'react'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Label } from '../ui/label'
@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog'
 import { supabase, AccessCode } from '../../lib/supabase'
 import { Plus, Copy, Trash2, RefreshCw, Key, QrCode, ExternalLink, Phone, User, StickyNote, Smartphone } from 'lucide-react'
-import { toast } from 'sonner@2.0.3'
+import { toast } from 'sonner'
 
 export default function AccessCodeManager() {
   const [accessCodes, setAccessCodes] = useState<AccessCode[]>([])

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+﻿import React, { useState, useEffect } from 'react'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Label } from '../ui/label'
@@ -29,7 +29,7 @@ import {
   FileText,
   Settings
 } from 'lucide-react'
-import { toast } from 'sonner@2.0.3'
+import { toast } from 'sonner'
 
 interface DonationLink {
   id: string
@@ -335,21 +335,21 @@ export default function AdditionalContentManager() {
 
   const getDonationIcon = (platform: string) => {
     switch (platform) {
-      case 'paypal': return '💳'
-      case 'ko-fi': return '☕'
-      case 'patreon': return '🎨'
-      case 'venmo': return '💸'
-      default: return '❤️'
+      case 'paypal': return 'ðŸ’³'
+      case 'ko-fi': return 'â˜•'
+      case 'patreon': return 'ðŸŽ¨'
+      case 'venmo': return 'ðŸ’¸'
+      default: return 'â¤ï¸'
     }
   }
 
   const getPodcastIcon = (platform: string) => {
     switch (platform) {
-      case 'spotify': return '🎵'
-      case 'apple': return '🍎'
-      case 'google': return '🎧'
-      case 'anchor': return '⚓'
-      default: return '📻'
+      case 'spotify': return 'ðŸŽµ'
+      case 'apple': return 'ðŸŽ'
+      case 'google': return 'ðŸŽ§'
+      case 'anchor': return 'âš“'
+      default: return 'ðŸ“»'
     }
   }
 
@@ -415,11 +415,11 @@ export default function AdditionalContentManager() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="paypal">💳 PayPal</SelectItem>
-                      <SelectItem value="ko-fi">☕ Ko-fi</SelectItem>
-                      <SelectItem value="patreon">🎨 Patreon</SelectItem>
-                      <SelectItem value="venmo">💸 Venmo</SelectItem>
-                      <SelectItem value="other">❤️ Other</SelectItem>
+                      <SelectItem value="paypal">ðŸ’³ PayPal</SelectItem>
+                      <SelectItem value="ko-fi">â˜• Ko-fi</SelectItem>
+                      <SelectItem value="patreon">ðŸŽ¨ Patreon</SelectItem>
+                      <SelectItem value="venmo">ðŸ’¸ Venmo</SelectItem>
+                      <SelectItem value="other">â¤ï¸ Other</SelectItem>
                     </SelectContent>
                   </Select>
                   <Input
