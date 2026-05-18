@@ -1,5 +1,7 @@
+'use client'
+
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
@@ -23,7 +25,7 @@ const quotes = [
 ];
 
 export default function LandingPage() {
-  const navigate = useNavigate();
+  const router = useRouter();
   const [currentQuote, setCurrentQuote] = useState('');
 
   useEffect(() => {
@@ -34,10 +36,10 @@ export default function LandingPage() {
 
   return (
     <div className="w-full">
-      <Header onLoginClick={() => navigate('/access')} />
-      <HeroSection 
-        currentQuote={currentQuote} 
-        onAccessClick={() => navigate('/access')}
+      <Header onLoginClick={() => router.push('/login')} />
+      <HeroSection
+        currentQuote={currentQuote}
+        onAccessClick={() => router.push('/login')}
         onLearnMoreClick={() => {
           const learnMoreSection = document.getElementById('learn-more');
           if (learnMoreSection) {
@@ -99,7 +101,7 @@ function AudioPlayerDialog() {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(245);
 
-  const formatTime = (seconds) => {
+  const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;

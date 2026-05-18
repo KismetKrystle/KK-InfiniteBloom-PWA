@@ -1,5 +1,7 @@
+'use client'
+
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { Button } from './ui/button';
 import { LogIn, Settings } from 'lucide-react';
 
@@ -8,7 +10,7 @@ interface HeaderProps {
 }
 
 export default function Header({ onLoginClick }: HeaderProps) {
-  const navigate = useNavigate();
+  const router = useRouter();
 
   return (
     <header className="absolute top-0 left-0 right-0 z-50 p-4">
@@ -17,7 +19,7 @@ export default function Header({ onLoginClick }: HeaderProps) {
         <Button 
           variant="outline" 
           size="sm"
-          onClick={() => navigate('/admin')}
+          onClick={() => router.push('/admin')}
           className="bg-background/80 backdrop-blur-sm hover:bg-background/90"
         >
           <Settings className="w-4 h-4 mr-2" />

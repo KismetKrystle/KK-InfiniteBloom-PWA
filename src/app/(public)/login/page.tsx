@@ -35,9 +35,19 @@ export default function LoginPage() {
   }
 
   async function handleGoogleLogin() {
+    setError("")
     setGoogleLoading(true)
-    await authClient.signIn.social({ provider: "google", callbackURL: "/post-login" })
-    setGoogleLoading(false)
+    try {
+      const { error } = await authClient.signIn.social({ provider: "google", callbackURL: "/post-login" })
+      if (error) {
+        setError(error.message ?? "Google sign-in failed. Please try again.")
+        setGoogleLoading(false)
+      }
+      // On success, better-auth redirects the browser — no further action needed here.
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Google sign-in failed. Please try again.")
+      setGoogleLoading(false)
+    }
   }
 
   return (
