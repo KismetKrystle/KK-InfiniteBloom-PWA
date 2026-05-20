@@ -139,41 +139,6 @@ export default function FlipbookPage({ user }: FlipbookPageProps) {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="bg-background/95 backdrop-blur-sm border-b sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.push('/')}
-              className="group"
-            >
-              <Home className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            </Button>
-            <div className="h-4 w-px bg-border" />
-            <div className="flex items-center space-x-2">
-              <BookOpen className="w-4 h-4 text-primary" />
-              <span className="font-medium">Infinite Bloom</span>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-4">
-            {/* User Messaging Component */}
-            <UserMessaging userId={user.id || 'mock-user-id'} userEmail={user.email} />
-
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowUserProfile(true)}
-              className="group"
-            >
-              <User className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      </header>
-
       {/* Main Content */}
       <div className="max-w-4xl mx-auto p-4 py-2 md:py-8">
         {/* Welcome Message */}

@@ -7,6 +7,7 @@ import ContactOverlay from './ContactOverlay'
 import PricingOverlay from './PricingOverlay'
 import AboutOverlay from './AboutOverlay'
 import SignInOverlay from './SignInOverlay'
+import AnimatedCardTitle from '@/components/AnimatedCardTitle'
 
 interface User {
   id: string
@@ -25,15 +26,19 @@ function BentoCard({
   className = '',
   onClick,
   accent = false,
+  short = false,
   hoverLabel,
   onHover,
+  onHoveredChange,
 }: {
   children: React.ReactNode
   className?: string
   onClick?: () => void
   accent?: boolean
+  short?: boolean
   hoverLabel?: string
   onHover?: (label: string | null) => void
+  onHoveredChange?: (hovered: boolean) => void
 }) {
   const [hovered, setHovered] = useState(false)
 
@@ -42,30 +47,42 @@ function BentoCard({
 
   const handleEnter = () => {
     setHovered(true)
+    onHoveredChange?.(true)
     if (onHover && hoverLabel && isFinePointer()) onHover(hoverLabel)
   }
   const handleLeave = () => {
     setHovered(false)
+    onHoveredChange?.(false)
     if (onHover && isFinePointer()) onHover(null)
+  }
+  const handleTouchStart = () => {
+    if (onHover && hoverLabel) onHover(hoverLabel)
   }
 
   const bg = accent
-    ? hovered ? 'rgba(232, 112, 31, 0.92)' : 'rgba(242, 125, 38, 0.85)'
-    : hovered ? 'rgba(227, 227, 227, 0.85)' : 'rgba(235, 235, 235, 0.75)'
+    ? hovered ? 'rgba(250, 160, 75, 0.95)' : 'rgba(242, 125, 38, 0.85)'
+    : hovered ? 'rgba(245, 245, 245, 0.95)' : 'rgba(224, 224, 224, 0.85)'
+
+  const shadow = hovered
+    ? '0 12px 40px rgba(0,0,0,0.14)'
+    : '0 2px 8px rgba(0,0,0,0.06)'
 
   return (
     <div
       onClick={onClick}
       onMouseEnter={handleEnter}
       onMouseLeave={handleLeave}
+      onTouchStart={handleTouchStart}
       style={{
         background: bg,
-        backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)',
-        transition: 'background 150ms ease',
+        backdropFilter: 'blur(3px)',
+        WebkitBackdropFilter: 'blur(3px)',
+        boxShadow: shadow,
+        transform: hovered ? 'translateY(-2px)' : 'translateY(0)',
+        transition: 'box-shadow 200ms ease-out, transform 200ms ease-out, background 150ms ease',
       }}
       className={[
-        'relative rounded-[32px] border flex flex-col overflow-hidden min-h-[160px] md:min-h-0',
+        `relative rounded-[29px] md:rounded-[32px] border flex flex-col overflow-hidden ${short ? 'min-h-[80px]' : 'min-h-[160px]'} md:min-h-0`,
         'cursor-pointer select-none group',
         accent ? 'border-[#F27D26]' : 'border-[#d4d4d4]',
         className,
@@ -88,11 +105,15 @@ function CardLabel({
   sub,
   accent = false,
   light = false,
+  animated = false,
+  isHovered = false,
 }: {
   label: string
   sub?: string
   accent?: boolean
   light?: boolean
+  animated?: boolean
+  isHovered?: boolean
 }) {
   const labelColor = accent ? 'black' : light ? 'white' : '#111'
   const subColor = accent ? 'rgba(0,0,0,0.6)' : light ? 'rgba(255,255,255,0.7)' : '#888'
@@ -100,7 +121,7 @@ function CardLabel({
   return (
     <div className="mt-auto p-5 pt-2 relative z-10">
       <p
-        className="leading-snug md:group-hover:animate-[labelPop_300ms_ease-in-out]"
+        className="leading-snug"
         style={{
           fontFamily: 'Inter, sans-serif',
           fontSize: 'clamp(18px, 1.5vw, 22px)',
@@ -108,7 +129,7 @@ function CardLabel({
           color: labelColor,
         }}
       >
-        {label}
+        {animated ? <AnimatedCardTitle isHovered={isHovered}>{label}</AnimatedCardTitle> : label}
       </p>
       {sub && (
         <p className="text-xs mt-0.5" style={{ color: subColor }}>
@@ -125,6 +146,12 @@ export default function BentoGrid({ user, hasPurchase, onHover }: BentoGridProps
   const [pricingOpen, setPricingOpen] = useState(false)
   const [aboutOpen, setAboutOpen] = useState(false)
   const [signInOpen, setSignInOpen] = useState(false)
+  const [aboutHovered, setAboutHovered] = useState(false)
+  const [accessHovered, setAccessHovered] = useState(false)
+  const [audioHovered, setAudioHovered] = useState(false)
+  const [eventsHovered, setEventsHovered] = useState(false)
+  const [getBookHovered, setGetBookHovered] = useState(false)
+  const [contactHovered, setContactHovered] = useState(false)
 
   const anyOverlayOpen = contactOpen || pricingOpen || aboutOpen || signInOpen
 
@@ -152,13 +179,14 @@ export default function BentoGrid({ user, hasPurchase, onHover }: BentoGridProps
           onClick={() => setAboutOpen(true)}
           hoverLabel="About"
           onHover={onHover}
+          onHoveredChange={setAboutHovered}
         >
           <img
             src="https://res.cloudinary.com/dsoojlgg1/image/upload/v1765783633/Kismet_head_shot_wprdoh.jpg"
             alt="Kismet Krystle"
             className="absolute top-4 right-4 w-16 h-16 md:w-28 md:h-28 rounded-full object-cover object-top"
           />
-          <CardLabel label="About" sub="Poet · author · speaker" />
+          <CardLabel label="About" sub="Poet · author · speaker" animated isHovered={aboutHovered} />
         </BentoCard>
 
         {/* Access — mobile: col-span-2, row 2 | desktop: cols 2–4, rows 1–2 */}
@@ -167,6 +195,7 @@ export default function BentoGrid({ user, hasPurchase, onHover }: BentoGridProps
           onClick={handleAccess}
           hoverLabel="Access"
           onHover={onHover}
+          onHoveredChange={setAccessHovered}
         >
           {/* Mobile: right-aligned | Desktop: centered */}
           <div className="absolute inset-0 flex items-center justify-end md:justify-center p-4 md:p-0 pointer-events-none">
@@ -181,7 +210,7 @@ export default function BentoGrid({ user, hasPurchase, onHover }: BentoGridProps
             className="absolute inset-x-0 bottom-0 pointer-events-none"
             style={{ height: '35%', background: 'linear-gradient(to top, rgba(235,235,235,0.95) 0%, transparent 100%)' }}
           />
-          <CardLabel label="Access Book" sub="Digital flipbook · audio · reflections" />
+          <CardLabel label="Access Book" sub="Digital flipbook · audio · reflections" animated isHovered={accessHovered} />
         </BentoCard>
 
         {/* Audio — mobile: col 1, row 3 | desktop: cols 1–2, rows 3–4 */}
@@ -190,6 +219,7 @@ export default function BentoGrid({ user, hasPurchase, onHover }: BentoGridProps
           onClick={handleAudio}
           hoverLabel="Audio Poems"
           onHover={onHover}
+          onHoveredChange={setAudioHovered}
         >
           <div className="flex-1 flex items-end p-5 pb-3">
             <div className="flex items-end gap-[3px]">
@@ -208,7 +238,7 @@ export default function BentoGrid({ user, hasPurchase, onHover }: BentoGridProps
               ))}
             </div>
           </div>
-          <CardLabel label="Audio poems" />
+          <CardLabel label="Audio poems" animated isHovered={audioHovered} />
         </BentoCard>
 
         {/* Events — mobile: col 2, row 3 | desktop: col 3, rows 3–4 (swapped with Get the Book) */}
@@ -216,6 +246,7 @@ export default function BentoGrid({ user, hasPurchase, onHover }: BentoGridProps
           className="md:col-start-3 md:col-end-4 md:row-start-3 md:row-end-5"
           hoverLabel="Events"
           onHover={onHover}
+          onHoveredChange={setEventsHovered}
         >
           <video
             src="https://res.cloudinary.com/dsoojlgg1/video/upload/v1779179503/kismet-ase-2025_b7npxb.mp4"
@@ -229,28 +260,32 @@ export default function BentoGrid({ user, hasPurchase, onHover }: BentoGridProps
             className="absolute inset-x-0 bottom-0 pointer-events-none"
             style={{ height: '40%', background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 100%)' }}
           />
-          <CardLabel light label="Events" />
+          <CardLabel light label="Events" animated isHovered={eventsHovered} />
         </BentoCard>
 
         {/* Get the Book — mobile: col 1, row 4 | desktop: col 4, row 3 (swapped with Events) */}
         <BentoCard
           accent
+          short
           className="md:col-start-4 md:col-end-5 md:row-start-3 md:row-end-4"
           onClick={() => setPricingOpen(true)}
           hoverLabel="Get the Book"
           onHover={onHover}
+          onHoveredChange={setGetBookHovered}
         >
-          <CardLabel accent label="Get the book" />
+          <CardLabel accent label="Get the book" animated isHovered={getBookHovered} />
         </BentoCard>
 
         {/* Contact — mobile: col 2, row 4 | desktop: col 4, row 4 */}
         <BentoCard
+          short
           className="md:col-start-4 md:col-end-5 md:row-start-4 md:row-end-5"
           onClick={() => setContactOpen(true)}
           hoverLabel="Contact"
           onHover={onHover}
+          onHoveredChange={setContactHovered}
         >
-          <CardLabel label="Contact" />
+          <CardLabel label="Contact" animated isHovered={contactHovered} />
         </BentoCard>
 
       </div>
