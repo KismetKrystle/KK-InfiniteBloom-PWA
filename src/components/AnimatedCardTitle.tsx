@@ -37,6 +37,23 @@ export default function AnimatedCardTitle({ children, className, isHovered, subt
     return <span className={className}>{children}</span>
   }
 
+  if (subtle) {
+    return (
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.span
+          key={children}
+          className={className}
+          style={{ display: 'inline-block' }}
+          initial={{ y: 10, opacity: 0 }}
+          animate={{ y: 0, opacity: 1, transition: { duration: 0.3, ease: 'easeInOut' } }}
+          exit={{ y: -10, opacity: 0, transition: { duration: 0.3, ease: 'easeInOut' } }}
+        >
+          {children}
+        </motion.span>
+      </AnimatePresence>
+    )
+  }
+
   const chars = splitGraphemes(children)
   const total = chars.length
 

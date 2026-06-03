@@ -40,9 +40,10 @@ interface Device {
 interface SharedNavbarProps {
   user: { id: string; name: string | null; email: string } | null
   dark?: boolean
+  transparent?: boolean
 }
 
-export default function SharedNavbar({ user, dark = false }: SharedNavbarProps) {
+export default function SharedNavbar({ user, dark = false, transparent = false }: SharedNavbarProps) {
   const router = useRouter()
   const [purchasesData, setPurchasesData] = useState<PurchasesData | null>(null)
   const [devices, setDevices] = useState<Device[]>([])
@@ -99,7 +100,7 @@ export default function SharedNavbar({ user, dark = false }: SharedNavbarProps) 
       <header
         className={[
           'fixed top-0 left-0 right-0 h-12 z-[60] flex items-center justify-between px-4',
-          dark ? 'bg-black/60 backdrop-blur-sm' : 'bg-white',
+          dark ? 'bg-black/60 backdrop-blur-sm' : transparent ? 'bg-transparent' : 'bg-white',
         ].join(' ')}
       >
         <a href="/" className="flex items-center h-full">
@@ -191,10 +192,12 @@ export default function SharedNavbar({ user, dark = false }: SharedNavbarProps) 
         )}
 
         {/* Gradient fade — child element that bleeds below the bar */}
-        <div
-          className="absolute left-0 right-0 top-full h-6 pointer-events-none"
-          style={{ background: `linear-gradient(to bottom, ${gradientColor}, transparent)` }}
-        />
+        {!transparent && (
+          <div
+            className="absolute left-0 right-0 top-full h-6 pointer-events-none"
+            style={{ background: `linear-gradient(to bottom, ${gradientColor}, transparent)` }}
+          />
+        )}
       </header>
 
       {/* Manage Devices Dialog */}

@@ -6,11 +6,11 @@ type EventType = 'page_view' | 'access_code_use' | 'product_click' | 'share'
 export function useAnalytics() {
   const trackEvent = async (eventType: EventType, data: any = {}) => {
     try {
-      await supabase.from('analytics').insert({
+      await Promise.resolve(supabase.from('analytics').insert({
         event_type: eventType,
         data,
         created_at: new Date().toISOString()
-      })
+      }))
     } catch (error) {
       console.error('Analytics tracking error:', error)
     }
