@@ -26,7 +26,7 @@ interface PurchasesData {
 }
 
 interface FlipbookNavbarProps {
-  user: { id: string; name: string | null; email: string }
+  user: { id: string; name: string | null; email: string } | null
   onClose: () => void
   onToggleFullScreen: () => void
 }
