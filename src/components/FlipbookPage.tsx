@@ -1,222 +1,224 @@
 'use client'
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Card, CardContent } from './ui/card';
-import { Button } from './ui/button';
-import { Badge } from './ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import {
-  BookOpen,
-  User,
-  Home,
-  ExternalLink,
-  HelpCircle,
-  Maximize,
-  Minimize,
-  ArrowLeft,
-  Volume2,
-  VolumeX,
-  Play,
-  Pause,
-  X
-} from 'lucide-react';
-import { ImageWithFallback } from './figma/ImageWithFallback';
+import React, { useState, useRef, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { Card, CardContent } from './ui/card'
+import { Button } from './ui/button'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog'
+import { Input } from './ui/input'
+import { Label } from './ui/label'
+import { HelpCircle, Maximize, ExternalLink, X, User, Mail } from 'lucide-react'
+import { ImageWithFallback } from './figma/ImageWithFallback'
 
-import UserMessaging from './UserMessaging';
-import UserTestimonialForm from './UserTestimonialForm';
-import PromptJournal from './PromptJournal';
-import { useAnalytics } from '../hooks/useAnalytics';
+import UserTestimonialForm from './UserTestimonialForm'
+import PromptJournal from './PromptJournal'
+import SharedNavbar from './SharedNavbar'
+import FlipbookNavbar from './FlipbookNavbar'
+
+const PREVIEW_DURATION_S = 180
+const GRACE_PERIOD_MS = 10_000
 
 interface FlipbookPageProps {
-  user: any;
+  user: { id: string; name: string | null; email: string } | null
+  hasPurchased: boolean
 }
 
-export default function FlipbookPage({ user }: FlipbookPageProps) {
-  const router = useRouter();
-  const [showUserProfile, setShowUserProfile] = useState(false);
-  const [userEmail, setUserEmail] = useState(user?.email || 'user@example.com');
-  const [newEmail, setNewEmail] = useState('');
-  const [isEditingEmail, setIsEditingEmail] = useState(false);
-  const [showReflectionsInfo, setShowReflectionsInfo] = useState(false);
-  const [showFlipbook, setShowFlipbook] = useState(false);
-  const [isFullScreen, setIsFullScreen] = useState(false);
+export default function FlipbookPage({ user, hasPurchased }: FlipbookPageProps) {
+  const router = useRouter()
+  const [showUserProfile, setShowUserProfile] = useState(false)
+  const [userEmail, setUserEmail] = useState(user?.email ?? 'user@example.com')
+  const [newEmail, setNewEmail] = useState('')
+  const [isEditingEmail, setIsEditingEmail] = useState(false)
+  const [showReflectionsInfo, setShowReflectionsInfo] = useState(false)
+  const [showFlipbook, setShowFlipbook] = useState(false)
+  const [isFullScreen, setIsFullScreen] = useState(false)
 
-  const { trackEvent } = useAnalytics();
+  // Preview state — unused when hasPurchased
+  const [interactionCaptured, setInteractionCaptured] = useState(false)
+  const [paywallActive, setPaywallActive] = useState(false)
+  const [paywallDismissed, setPaywallDismissed] = useState(false)
 
-  // Mock user subscription data - replace with actual user data
-  const userSubscription = {
-    devicesUsed: 1,
-    maxDevices: 2,
-    purchaseDate: new Date('2024-01-15')
-  };
+  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const graceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const iframeRef = useRef<HTMLIFrameElement>(null)
+
+  useEffect(() => {
+    return () => {
+      if (countdownRef.current) clearInterval(countdownRef.current)
+      if (graceRef.current) clearTimeout(graceRef.current)
+    }
+  }, [])
+
+  // When FlipHTML5 triggers native browser fullscreen on the iframe, the browser hides
+  // everything outside it — including our fixed icons. Intercept it and switch to our
+  // custom fullscreen instead, where our UI stays visible.
+  useEffect(() => {
+    function onFullscreenChange() {
+      const isMobile = window.innerWidth < 768
+      if (document.fullscreenElement === iframeRef.current && isMobile) {
+        document.exitFullscreen().catch(() => {})
+        setIsFullScreen(true)
+      } else if (!document.fullscreenElement && isFullScreen) {
+        setIsFullScreen(false)
+      }
+    }
+    document.addEventListener('fullscreenchange', onFullscreenChange)
+    return () => document.removeEventListener('fullscreenchange', onFullscreenChange)
+  }, [isFullScreen])
+
+  function handleFirstInteraction() {
+    console.log('[Paywall] First click detected — starting grace period', GRACE_PERIOD_MS, 'ms')
+    setInteractionCaptured(true)
+    graceRef.current = setTimeout(() => {
+      console.log('[Paywall] Grace period ended — starting countdown', PREVIEW_DURATION_S, 's')
+      let remaining = PREVIEW_DURATION_S
+      countdownRef.current = setInterval(() => {
+        remaining -= 1
+        console.log('[Paywall] Tick —', remaining, 's remaining')
+        if (remaining <= 0) {
+          console.log('[Paywall] Countdown complete — setting paywallActive = true')
+          clearInterval(countdownRef.current!)
+          setPaywallActive(true)
+        }
+      }, 1_000)
+    }, GRACE_PERIOD_MS)
+  }
+
+  function handleDismissPaywall() {
+    setPaywallActive(false)
+    setPaywallDismissed(true)
+  }
 
   const handleEmailUpdate = () => {
     if (newEmail && newEmail !== userEmail) {
-      setUserEmail(newEmail);
-      setIsEditingEmail(false);
-      setNewEmail('');
-      // Here you would update the email in your backend
+      setUserEmail(newEmail)
+      setIsEditingEmail(false)
+      setNewEmail('')
     }
-  };
-
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
-  const [iframeRef, setIframeRef] = useState<HTMLIFrameElement | null>(null);
-
-  const toggleAudio = () => {
-    if (iframeRef?.contentWindow) {
-      const audioElements = iframeRef.contentDocument?.getElementsByTagName('audio');
-      if (audioElements && audioElements.length > 0) {
-        let anyPlaying = false;
-
-        // Check if any are effectively playing
-        for (let i = 0; i < audioElements.length; i++) {
-          const audio = audioElements[i];
-          if (!audio.paused && audio.playbackRate > 0) {
-            anyPlaying = true;
-            break;
-          }
-        }
-
-        const targetState = !anyPlaying;
-        setIsPlaying(targetState);
-
-        for (let i = 0; i < audioElements.length; i++) {
-          const audio = audioElements[i];
-          try {
-            if (targetState) {
-              // RESUME Logic
-              // 1. If it was 'soft paused' (rate 0), restore rate and force play
-              if (audio.playbackRate === 0) {
-                audio.playbackRate = 1;
-                audio.play().catch(e => console.error("Resume soft-pause failed:", e));
-              }
-              // 2. If it was hard paused but had progress, play it
-              else if (audio.paused && audio.currentTime > 0 && !audio.ended) {
-                audio.playbackRate = 1;
-                audio.play().catch(e => console.error("Resume hard-pause failed:", e));
-              }
-            } else {
-              // PAUSE Logic
-              // Soft pause by setting rate to 0 to prevent 'ended'/'pause' events firing
-              if (!audio.paused) {
-                audio.playbackRate = 0;
-              }
-            }
-          } catch (e) {
-            console.error("Error toggling audio:", e);
-          }
-        }
-      }
-    }
-  };
-
-  const toggleMute = () => {
-    if (iframeRef?.contentWindow) {
-      const audioElements = iframeRef.contentDocument?.getElementsByTagName('audio');
-      if (audioElements && audioElements.length > 0) {
-        // Determine target mute state from the first element
-        const targetMute = !audioElements[0].muted;
-        setIsMuted(targetMute);
-
-        for (let i = 0; i < audioElements.length; i++) {
-          audioElements[i].muted = targetMute;
-        }
-      }
-    }
-  };
-
-  const openFlipbook = () => {
-    // Track flipbook access
-    trackEvent('page_view', { page: 'flipbook', user: user.email });
-    setShowFlipbook(true);
-  };
-
-
+  }
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Main Content */}
-      <div className="max-w-4xl mx-auto p-4 py-2 md:py-8">
-        {/* Welcome Message */}
-        <div className="mb-4 md:mb-6 text-left">
-          <h2 className="text-2xl">Welcome to Infinite Bloom, </h2>
-          <h2> {user.name}!</h2>
-        </div>
+      {isFullScreen
+        ? <FlipbookNavbar
+            user={user}
+            onClose={() => setIsFullScreen(false)}
+            onToggleFullScreen={() => setIsFullScreen(false)}
+          />
+        : <SharedNavbar user={user} />
+      }
 
-        {/* Book Image */}
-        {/* Book Image or Iframe */}
-        <div className="text-center mb-4 md:mb-6">
+      <div className="max-w-4xl mx-auto p-4 pt-14 md:py-8 md:pt-14">
+        {user && (
+          <div className="mb-4 md:mb-6 text-left">
+            <h2 className="text-2xl">Welcome to Infinite Bloom, </h2>
+            <h2> {user.name}!</h2>
+          </div>
+        )}
+
+        {/* Flipbook */}
+        <div className="mb-4 md:mb-6">
           {showFlipbook ? (
-            <div className={`${isFullScreen ? 'fixed inset-0 z-50 bg-background' : 'relative max-w-4xl mx-auto w-full h-80 md:h-[600px] bg-gray-100 rounded-lg overflow-hidden shadow-xl'}`}>
-              <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
-                {/* Mobile Back Button - integrated into vertical stack if needed, or kept separate. 
-                     User requested specific icons. I'll add the requested ones here. */}
-
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="bg-black/40 text-white hover:bg-black/60 hover:text-white backdrop-blur-sm transition-colors rounded-full"
-                  onClick={() => setIsFullScreen(!isFullScreen)}
-                  title={isFullScreen ? "Exit Full Screen" : "Full Screen"}
-                >
-                  {isFullScreen ? (
-                    <Minimize className="w-5 h-5" />
-                  ) : (
+            <div className={isFullScreen ? 'fixed inset-0 z-50 bg-black' : 'relative max-w-4xl mx-auto w-full h-80 md:h-[600px] bg-gray-100 rounded-lg overflow-hidden shadow-xl'}>
+              {!isFullScreen && (
+                <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
+                  <button
+                    onClick={() => setIsFullScreen(true)}
+                    title="Full Screen"
+                    className="bg-black/40 hover:bg-black/60 backdrop-blur-sm text-white rounded-full p-2 transition-colors"
+                  >
                     <Maximize className="w-5 h-5" />
-                  )}
-                </Button>
+                  </button>
 
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="bg-black/40 text-white hover:bg-black/60 hover:text-white backdrop-blur-sm transition-colors rounded-full"
-                  onClick={toggleAudio}
-                  title={isPlaying ? "Pause" : "Play Music"}
-                >
-                  {isPlaying ? (
-                    <Pause className="w-5 h-5" />
-                  ) : (
-                    <Play className="w-5 h-5" />
-                  )}
-                </Button>
-
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="bg-black/40 text-white hover:bg-black/60 hover:text-white backdrop-blur-sm transition-colors rounded-full"
-                  onClick={toggleMute}
-                  title={isMuted ? "Unmute" : "Mute"}
-                >
-                  {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-                </Button>
-              </div>
-
-              {/* Close Button remains top-right but simplified */}
-              <div className="absolute top-4 right-4 z-10">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="bg-red-500/80 text-white hover:bg-red-600 hover:text-white shadow-sm rounded-full backdrop-blur-sm transition-colors"
-                  onClick={() => {
-                    setShowFlipbook(false);
-                    setIsFullScreen(false);
-                  }}
-                  title="Close Book"
-                >
-                  <X className="w-5 h-5" />
-                </Button>
-              </div>
+                  {/* Mobile-only icons — hidden on md+ where SharedNavbar is always visible */}
+                  <div className="md:hidden flex items-center gap-2 bg-black/40 backdrop-blur-sm rounded-full px-2 py-2">
+                    <button
+                      onClick={() => setShowFlipbook(false)}
+                      aria-label="Close flipbook"
+                      className="flex items-center justify-center p-1 text-white/80 hover:text-white transition-opacity"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                    {user && (
+                      <button
+                        onClick={() => router.push('/dashboard')}
+                        aria-label="Account"
+                        className="flex items-center justify-center p-1 text-white/80 hover:text-white transition-opacity"
+                      >
+                        <User className="w-4 h-4" />
+                      </button>
+                    )}
+                    {user && (
+                      <button
+                        onClick={() => router.push('/dashboard/messages')}
+                        aria-label="Messages"
+                        className="flex items-center justify-center p-1 text-white/80 hover:text-white transition-opacity"
+                      >
+                        <Mail className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
 
               <iframe
-                ref={(el) => setIframeRef(el)}
+                ref={iframeRef}
                 src={process.env.NEXT_PUBLIC_BOOK_URL ?? '/book/index.html'}
                 className="w-full h-full border-0"
                 title="Infinite Bloom Flipbook"
+                allowFullScreen
               />
+
+              {/* Transparent first-interaction capture overlay — sits above iframe, below controls */}
+              {!hasPurchased && !interactionCaptured && (
+                <div
+                  className="absolute inset-0 z-[5] cursor-pointer"
+                  onClick={handleFirstInteraction}
+                  aria-hidden="true"
+                />
+              )}
+
+              {/* Paywall overlay */}
+              {!hasPurchased && paywallActive && (
+                <div className="absolute inset-0 z-20 flex items-center justify-center backdrop-blur-sm bg-white/80">
+                  <div className="relative bg-white rounded-2xl shadow-2xl px-8 py-10 max-w-sm mx-4 text-center">
+                    <button
+                      onClick={handleDismissPaywall}
+                      aria-label="Dismiss"
+                      className="absolute top-3 right-3 text-[#aaa] hover:text-[#333] transition-colors"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                    <p className="text-xs uppercase tracking-widest text-[#aaa] mb-3">Free Preview Ended</p>
+                    <h3 className="text-xl font-semibold text-[#111] mb-2">Enjoyed what you read?</h3>
+                    <p className="text-sm text-[#666] mb-6">Get the full Infinite Bloom experience — every poem, every page.</p>
+                    <a
+                      href="/"
+                      className="block w-full py-3 rounded-xl text-white font-medium text-sm transition-opacity hover:opacity-90"
+                      style={{ backgroundColor: '#F27D26' }}
+                    >
+                      Get Your Copy
+                    </a>
+                    {!user && (
+                      <p className="mt-4 text-xs text-[#aaa]">
+                        Already have access?{' '}
+                        <a href="/login" className="text-[#F27D26] hover:underline">Sign in</a>
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Persistent floating button after paywall dismissed */}
+              {!hasPurchased && paywallDismissed && (
+                <a
+                  href="/"
+                  className="absolute bottom-14 left-4 z-10 px-4 py-2 rounded-xl text-white text-sm font-medium shadow-lg transition-opacity hover:opacity-90"
+                  style={{ backgroundColor: '#F27D26' }}
+                >
+                  Get Your Copy
+                </a>
+              )}
             </div>
           ) : (
             <Card className="max-w-4xl mx-auto group cursor-pointer hover:shadow-2xl transition-all duration-300 hover:-translate-y-2" onClick={() => setShowFlipbook(true)}>
@@ -240,67 +242,60 @@ export default function FlipbookPage({ user }: FlipbookPageProps) {
           )}
         </div>
 
-        {/* Writing Companion Section */}
-        <div className="mb-4 md:mb-6">
-          <Card className="bg-white rounded-xl shadow-lg border-0">
-            <CardContent className="p-4 md:p-8">
-              <div className="mb-4 md:mb-6">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <h2 className="text-2xl font-bold">Write & Reflect Companion</h2>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0 hover:bg-muted rounded-full"
-                    onClick={() => setShowReflectionsInfo(!showReflectionsInfo)}
-                    aria-label="Toggle reflections information"
-                  >
-                    <HelpCircle className="w-4 h-4 text-muted-foreground" />
-                  </Button>
-                </div>
-                {showReflectionsInfo && (
-                  <p className="text-sm text-muted-foreground leading-relaxed text-center">
-                    Explore thoughtful prompts, capture your insights, and preserve your reflections in one place.
-                    Your personal writing space for poetry, thoughts, and moments of clarity.
-                  </p>
-                )}
-              </div>
-              <PromptJournal userId={user.id || 'mock-user-id'} />
-            </CardContent>
-          </Card>
-        </div>
+        {/* Authenticated-only sections */}
+        {user && (
+          <>
+            <div className="mb-4 md:mb-6">
+              <Card className="bg-white rounded-xl shadow-lg border-0">
+                <CardContent className="p-4 md:p-8">
+                  <div className="mb-4 md:mb-6">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <h2 className="text-2xl font-bold">Write & Reflect Companion</h2>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 hover:bg-muted rounded-full"
+                        onClick={() => setShowReflectionsInfo(!showReflectionsInfo)}
+                        aria-label="Toggle reflections information"
+                      >
+                        <HelpCircle className="w-4 h-4 text-muted-foreground" />
+                      </Button>
+                    </div>
+                    {showReflectionsInfo && (
+                      <p className="text-sm text-muted-foreground leading-relaxed text-center">
+                        Explore thoughtful prompts, capture your insights, and preserve your reflections in one place.
+                        Your personal writing space for poetry, thoughts, and moments of clarity.
+                      </p>
+                    )}
+                  </div>
+                  <PromptJournal userId={user.id} />
+                </CardContent>
+              </Card>
+            </div>
 
-        {/* Light Divider */}
-        <div className="flex justify-center mb-4">
-          <div className="w-24 h-px bg-border"></div>
-        </div>
+            <div className="flex justify-center mb-4">
+              <div className="w-24 h-px bg-border"></div>
+            </div>
 
-        {/* User Testimonial Form - Centered */}
-        <div className="flex justify-center mb-4">
-          <UserTestimonialForm
-            userEmail={user.email}
-            userName={user.name}
-          />
-        </div>
+            <div className="flex justify-center mb-4">
+              <UserTestimonialForm userEmail={user.email} userName={user.name ?? ''} />
+            </div>
+          </>
+        )}
       </div>
 
-      {/* User Profile Dialog */}
-      <Dialog open={showUserProfile} onOpenChange={setShowUserProfile}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Profile & Settings</DialogTitle>
-            <DialogDescription>
-              Manage your account details and device usage
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-6 py-4">
-            {/* User Info */}
-            <div className="space-y-4">
+      {user && (
+        <Dialog open={showUserProfile} onOpenChange={setShowUserProfile}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Profile & Settings</DialogTitle>
+              <DialogDescription>Manage your account details</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
               <div>
                 <Label className="text-sm font-medium">Name</Label>
                 <p className="text-sm text-muted-foreground">{user.name}</p>
               </div>
-
               <div>
                 <Label className="text-sm font-medium">Email Address</Label>
                 {isEditingEmail ? (
@@ -313,14 +308,7 @@ export default function FlipbookPage({ user }: FlipbookPageProps) {
                     />
                     <div className="flex space-x-2">
                       <Button size="sm" onClick={handleEmailUpdate}>Save</Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setIsEditingEmail(false);
-                          setNewEmail('');
-                        }}
-                      >
+                      <Button size="sm" variant="outline" onClick={() => { setIsEditingEmail(false); setNewEmail('') }}>
                         Cancel
                       </Button>
                     </div>
@@ -328,45 +316,16 @@ export default function FlipbookPage({ user }: FlipbookPageProps) {
                 ) : (
                   <div className="flex items-center justify-between">
                     <p className="text-sm text-muted-foreground">{userEmail}</p>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        setIsEditingEmail(true);
-                        setNewEmail(userEmail);
-                      }}
-                    >
+                    <Button size="sm" variant="outline" onClick={() => { setIsEditingEmail(true); setNewEmail(userEmail) }}>
                       Edit
                     </Button>
                   </div>
                 )}
               </div>
             </div>
-
-            {/* Device Usage */}
-            <div className="border-t pt-4">
-              <h4 className="font-medium mb-3">Device Usage</h4>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-sm">Devices Used:</span>
-                  <span className="text-sm font-medium">
-                    {userSubscription.devicesUsed} of {userSubscription.maxDevices}
-                  </span>
-                </div>
-                <div className="w-full bg-muted rounded-full h-2">
-                  <div
-                    className="bg-primary h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${(userSubscription.devicesUsed / userSubscription.maxDevices) * 100}%` }}
-                  ></div>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Registration: {userSubscription.purchaseDate.toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
-  );
+  )
 }

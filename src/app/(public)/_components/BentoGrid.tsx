@@ -19,6 +19,8 @@ interface BentoGridProps {
   user: User | null
   hasPurchase: boolean
   onHover: (label: string | null) => void
+  headingText: string
+  headingPulsed: boolean
 }
 
 function BentoCard({
@@ -140,7 +142,18 @@ function CardLabel({
   )
 }
 
-export default function BentoGrid({ user, hasPurchase, onHover }: BentoGridProps) {
+const headingStyle: React.CSSProperties = {
+  fontFamily: 'Inter, sans-serif',
+  fontSize: 'clamp(35px, 11vw, 175px)',
+  lineHeight: 1,
+  fontWeight: 700,
+  color: '#111',
+  letterSpacing: '-0.01em',
+  whiteSpace: 'nowrap',
+  textAlign: 'center',
+}
+
+export default function BentoGrid({ user, hasPurchase, onHover, headingText, headingPulsed }: BentoGridProps) {
   const router = useRouter()
   const [contactOpen, setContactOpen] = useState(false)
   const [pricingOpen, setPricingOpen] = useState(false)
@@ -156,9 +169,7 @@ export default function BentoGrid({ user, hasPurchase, onHover }: BentoGridProps
   const anyOverlayOpen = contactOpen || pricingOpen || aboutOpen || signInOpen
 
   const handleAccess = () => {
-    if (!user) { setSignInOpen(true); return }
-    if (hasPurchase) { router.push('/flipbook'); return }
-    setPricingOpen(true)
+    router.push('/flipbook')
   }
 
   const handleAudio = () => {
@@ -170,123 +181,140 @@ export default function BentoGrid({ user, hasPurchase, onHover }: BentoGridProps
     <>
       <div
         style={{ opacity: anyOverlayOpen ? 0.3 : 1, transition: 'opacity 220ms ease-out' }}
-        className="grid grid-cols-2 md:grid-cols-4 md:grid-rows-4 gap-[10px] md:h-full"
+        className="flex flex-col md:h-full"
       >
 
-        {/* About — mobile: col-span-2, row 1 | desktop: col 1, rows 1–2 */}
-        <BentoCard
-          className="col-span-2 md:col-start-1 md:col-end-2 md:row-start-1 md:row-end-3"
-          onClick={() => setAboutOpen(true)}
-          hoverLabel="About"
-          onHover={onHover}
-          onHoveredChange={setAboutHovered}
-        >
-          <img
-            src="https://res.cloudinary.com/dsoojlgg1/image/upload/v1765783633/Kismet_head_shot_wprdoh.jpg"
-            alt="Kismet Krystle"
-            className="absolute top-4 right-4 w-16 h-16 md:w-28 md:h-28 rounded-full object-cover object-top"
-          />
-          <CardLabel label="About" sub="Poet · author · speaker" animated isHovered={aboutHovered} />
-        </BentoCard>
+        {/* Top grid: About + Access */}
+        <div className="grid grid-cols-2 md:grid-cols-4 md:grid-rows-1 gap-[10px] flex-1 md:min-h-0">
 
-        {/* Access — mobile: col-span-2, row 2 | desktop: cols 2–4, rows 1–2 */}
-        <BentoCard
-          className="col-span-2 md:col-start-2 md:col-end-5 md:row-start-1 md:row-end-3"
-          onClick={handleAccess}
-          hoverLabel="Access"
-          onHover={onHover}
-          onHoveredChange={setAccessHovered}
-        >
-          {/* Mobile: right-aligned | Desktop: centered */}
-          <div className="absolute inset-0 flex items-center justify-end md:justify-center p-4 md:p-0 pointer-events-none">
+          {/* About */}
+          <BentoCard
+            className="col-span-2 md:col-span-1"
+            onClick={() => setAboutOpen(true)}
+            hoverLabel="About"
+            onHover={onHover}
+            onHoveredChange={setAboutHovered}
+          >
             <img
-              src="https://res.cloudinary.com/dsoojlgg1/image/upload/v1779156322/book_at_angle-v2_bg-removed_aqt9d7.png"
-              alt="The Infinite Bloom"
-              className="h-[65%] md:h-[70%] w-auto object-contain"
+              src="https://res.cloudinary.com/dsoojlgg1/image/upload/v1765783633/Kismet_head_shot_wprdoh.jpg"
+              alt="Kismet Krystle"
+              className="absolute top-4 right-4 w-16 h-16 md:w-28 md:h-28 rounded-full object-cover object-top"
             />
-          </div>
-          {/* Gradient behind label */}
-          <div
-            className="absolute inset-x-0 bottom-0 pointer-events-none"
-            style={{ height: '35%', background: 'linear-gradient(to top, rgba(235,235,235,0.95) 0%, transparent 100%)' }}
-          />
-          <CardLabel label="Access Book" sub="Digital flipbook · audio · reflections" animated isHovered={accessHovered} />
-        </BentoCard>
+            <CardLabel label="About" sub="Poet · author · speaker" animated isHovered={aboutHovered} />
+          </BentoCard>
 
-        {/* Audio — mobile: col 1, row 3 | desktop: cols 1–2, rows 3–4 */}
-        <BentoCard
-          className="md:col-start-1 md:col-end-3 md:row-start-3 md:row-end-5"
-          onClick={handleAudio}
-          hoverLabel="Audio Poems"
-          onHover={onHover}
-          onHoveredChange={setAudioHovered}
-        >
-          <div className="flex-1 flex items-end p-5 pb-3">
-            <div className="flex items-end gap-[3px]">
-              {[5, 9, 13, 8, 11, 6, 10, 14, 7, 12, 8, 10, 6, 13, 9].map((h, i) => (
-                <div
-                  key={i}
-                  className="w-[3px] rounded-full bg-[#F27D26] origin-bottom"
-                  style={{
-                    height: `${h * 3}px`,
-                    opacity: user ? 1 : 0.35,
-                    animation: user
-                      ? `audioBar ${0.8 + (i % 3) * 0.3}s ease-in-out ${i * 0.08}s infinite alternate`
-                      : 'none',
-                  }}
-                />
-              ))}
+          {/* Access */}
+          <BentoCard
+            className="col-span-2 md:col-span-3"
+            onClick={handleAccess}
+            hoverLabel="Access"
+            onHover={onHover}
+            onHoveredChange={setAccessHovered}
+          >
+            <div className="absolute inset-0 flex items-center justify-end md:justify-center p-4 md:p-0 pointer-events-none">
+              <img
+                src="https://res.cloudinary.com/dsoojlgg1/image/upload/v1779156322/book_at_angle-v2_bg-removed_aqt9d7.png"
+                alt="The Infinite Bloom"
+                className="h-[65%] md:h-[70%] w-auto object-contain"
+              />
             </div>
-          </div>
-          <CardLabel label="Audio poems" animated isHovered={audioHovered} />
-        </BentoCard>
+            <div
+              className="absolute inset-x-0 bottom-0 pointer-events-none"
+              style={{ height: '35%', background: 'linear-gradient(to top, rgba(235,235,235,0.95) 0%, transparent 100%)' }}
+            />
+            <CardLabel label="Access Book" sub="Digital flipbook · audio · reflections" animated isHovered={accessHovered} />
+          </BentoCard>
 
-        {/* Events — mobile: col 2, row 3 | desktop: col 3, rows 3–4 (swapped with Get the Book) */}
-        <BentoCard
-          className="md:col-start-3 md:col-end-4 md:row-start-3 md:row-end-5"
-          hoverLabel="Events"
-          onHover={onHover}
-          onHoveredChange={setEventsHovered}
-        >
-          <video
-            src="https://res.cloudinary.com/dsoojlgg1/video/upload/v1779179503/kismet-ase-2025_b7npxb.mp4"
-            autoPlay
-            muted
-            loop
-            playsInline
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-          <div
-            className="absolute inset-x-0 bottom-0 pointer-events-none"
-            style={{ height: '40%', background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 100%)' }}
-          />
-          <CardLabel light label="Events" animated isHovered={eventsHovered} />
-        </BentoCard>
+        </div>
 
-        {/* Get the Book — mobile: col 1, row 4 | desktop: col 4, row 3 (swapped with Events) */}
-        <BentoCard
-          accent
-          short
-          className="md:col-start-4 md:col-end-5 md:row-start-3 md:row-end-4"
-          onClick={() => setPricingOpen(true)}
-          hoverLabel="Get the Book"
-          onHover={onHover}
-          onHoveredChange={setGetBookHovered}
-        >
-          <CardLabel accent label="Get the book" animated isHovered={getBookHovered} />
-        </BentoCard>
+        {/* Heading */}
+        <div className="text-center py-4 flex-shrink-0">
+          <h1 style={headingStyle}>
+            <AnimatedCardTitle subtle isHovered={headingPulsed}>
+              {headingText}
+            </AnimatedCardTitle>
+          </h1>
+        </div>
 
-        {/* Contact — mobile: col 2, row 4 | desktop: col 4, row 4 */}
-        <BentoCard
-          short
-          className="md:col-start-4 md:col-end-5 md:row-start-4 md:row-end-5"
-          onClick={() => setContactOpen(true)}
-          hoverLabel="Contact"
-          onHover={onHover}
-          onHoveredChange={setContactHovered}
-        >
-          <CardLabel label="Contact" animated isHovered={contactHovered} />
-        </BentoCard>
+        {/* Bottom grid: Audio + Events + Get the Book + Contact */}
+        <div className="grid grid-cols-2 md:grid-cols-4 md:grid-rows-2 gap-[10px] flex-1 md:min-h-0">
+
+          {/* Audio */}
+          <BentoCard
+            className="col-span-1 md:col-span-2 md:row-span-2"
+            onClick={handleAudio}
+            hoverLabel="Audio Poems"
+            onHover={onHover}
+            onHoveredChange={setAudioHovered}
+          >
+            <div className="flex-1 flex items-end p-5 pb-3">
+              <div className="flex items-end gap-[3px]">
+                {[5, 9, 13, 8, 11, 6, 10, 14, 7, 12, 8, 10, 6, 13, 9].map((h, i) => (
+                  <div
+                    key={i}
+                    className="w-[3px] rounded-full bg-[#F27D26] origin-bottom"
+                    style={{
+                      height: `${h * 3}px`,
+                      opacity: user ? 1 : 0.35,
+                      animation: user
+                        ? `audioBar ${0.8 + (i % 3) * 0.3}s ease-in-out ${i * 0.08}s infinite alternate`
+                        : 'none',
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+            <CardLabel label="Audio poems" animated isHovered={audioHovered} />
+          </BentoCard>
+
+          {/* Events */}
+          <BentoCard
+            className="col-span-1 md:col-span-1 md:row-span-2"
+            hoverLabel="Events"
+            onHover={onHover}
+            onHoveredChange={setEventsHovered}
+          >
+            <video
+              src="https://res.cloudinary.com/dsoojlgg1/video/upload/v1779179503/kismet-ase-2025_b7npxb.mp4"
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <div
+              className="absolute inset-x-0 bottom-0 pointer-events-none"
+              style={{ height: '40%', background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 100%)' }}
+            />
+            <CardLabel light label="Events" animated isHovered={eventsHovered} />
+          </BentoCard>
+
+          {/* Get the Book */}
+          <BentoCard
+            accent
+            short
+            className="col-span-1 md:col-span-1"
+            onClick={() => setPricingOpen(true)}
+            hoverLabel="Get the Book"
+            onHover={onHover}
+            onHoveredChange={setGetBookHovered}
+          >
+            <CardLabel accent label="Get the book" animated isHovered={getBookHovered} />
+          </BentoCard>
+
+          {/* Contact */}
+          <BentoCard
+            short
+            className="col-span-1 md:col-span-1"
+            onClick={() => setContactOpen(true)}
+            hoverLabel="Contact"
+            onHover={onHover}
+            onHoveredChange={setContactHovered}
+          >
+            <CardLabel label="Contact" animated isHovered={contactHovered} />
+          </BentoCard>
+
+        </div>
 
       </div>
 
