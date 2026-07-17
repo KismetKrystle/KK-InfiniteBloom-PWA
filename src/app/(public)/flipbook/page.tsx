@@ -3,6 +3,10 @@ import { auth } from "@/lib/auth"
 import { sql } from "@/lib/db"
 import FlipbookPage from "@/components/FlipbookPage"
 
+// Only one active book/tenant today — Step 4 will resolve this from the
+// route/tenant context instead of a constant once a second book exists.
+const BOOK_SLUG = "kismet-krystle"
+
 export default async function FlipbookRoute() {
   const session = await auth.api.getSession({ headers: await headers() })
 
@@ -24,7 +28,7 @@ export default async function FlipbookRoute() {
 
   return (
     <>
-      <FlipbookPage user={session?.user ?? null} hasPurchased={hasPurchased} />
+      <FlipbookPage user={session?.user ?? null} hasPurchased={hasPurchased} bookSlug={BOOK_SLUG} />
       <footer className="py-4 text-center text-xs text-[#aaa]">
         Krystle Wilson © 2026
       </footer>

@@ -20,14 +20,7 @@ export default async function PostLoginPage() {
     ON CONFLICT DO NOTHING
   `
 
-  const rows = await sql`
-    SELECT p.id FROM purchases p
-    JOIN user_profiles up ON p.user_id = up.id
-    WHERE up.auth_user_id = ${session.user.id}
-      AND p.status = 'completed'
-      AND p.access_granted = true
-    LIMIT 1
-  `
-
-  redirect(rows.length > 0 ? "/flipbook" : "/dashboard")
+  // /flipbook itself resolves purchased vs. preview state — signing in never
+  // implies access on its own, so every login lands there regardless of purchase status.
+  redirect("/flipbook")
 }

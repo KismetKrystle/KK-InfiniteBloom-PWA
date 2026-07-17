@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getSessionCookie } from "better-auth/cookies"
 
-const protectedPaths = ["/flipbook", "/dashboard"]
+const protectedPaths = ["/dashboard"]
 const adminPaths = ["/admin"]
 
 export function middleware(request: NextRequest) {

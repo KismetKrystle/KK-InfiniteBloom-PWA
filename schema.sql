@@ -87,6 +87,7 @@ CREATE TABLE products (
   currency        TEXT NOT NULL DEFAULT 'usd',
   type            TEXT NOT NULL DEFAULT 'other'
                   CHECK (type IN ('flipbook', 'ebook', 'physical', 'bundle', 'other')),
+  r2_prefix       TEXT,                         -- R2 key prefix for flipbook-type products (e.g. 'book')
   stripe_price_id TEXT,                         -- set after creating product in Stripe dashboard
   order_index     INTEGER DEFAULT 0,
   is_active       BOOLEAN DEFAULT TRUE,
@@ -413,15 +414,15 @@ ON CONFLICT (tenant_id, section, key) DO NOTHING;
 -- ----------------------------------------------------------------
 -- Products
 -- ----------------------------------------------------------------
-INSERT INTO products (tenant_id, name, description, price_cents, currency, type, order_index)
-SELECT t.id, p.name, p.description, p.price_cents, 'usd', p.type, p.order_index
+INSERT INTO products (tenant_id, name, description, price_cents, currency, type, r2_prefix, order_index)
+SELECT t.id, p.name, p.description, p.price_cents, 'usd', p.type, p.r2_prefix, p.order_index
 FROM tenants t
 CROSS JOIN (VALUES
-  ('Digital Flipbook',       'Lifetime access to the interactive Infinite Bloom flipbook', 1499, 'flipbook', 1),
-  ('Ebook (PDF)',             'Downloadable PDF edition of Infinite Bloom',                  999, 'ebook',    2),
-  ('Physical Book',          'Printed softcover — ships to your door',                     2499, 'physical', 3),
-  ('Digital + Ebook Bundle', 'Flipbook access plus PDF download',                          1999, 'bundle',   4)
-) AS p(name, description, price_cents, type, order_index)
+  ('Digital Flipbook',       'Lifetime access to the interactive Infinite Bloom flipbook', 1499, 'flipbook', 'book', 1),
+  ('Ebook (PDF)',             'Downloadable PDF edition of Infinite Bloom',                  999, 'ebook',    NULL,   2),
+  ('Physical Book',          'Printed softcover — ships to your door',                     2499, 'physical', NULL,   3),
+  ('Digital + Ebook Bundle', 'Flipbook access plus PDF download',                          1999, 'bundle',   NULL,   4)
+) AS p(name, description, price_cents, type, r2_prefix, order_index)
 WHERE t.slug = 'kismet-krystle'
 ON CONFLICT (tenant_id, name) DO NOTHING;
 

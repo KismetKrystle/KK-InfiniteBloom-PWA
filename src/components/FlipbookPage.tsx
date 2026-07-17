@@ -21,9 +21,10 @@ const GRACE_PERIOD_MS = 10_000
 interface FlipbookPageProps {
   user: { id: string; name: string | null; email: string } | null
   hasPurchased: boolean
+  bookSlug: string
 }
 
-export default function FlipbookPage({ user, hasPurchased }: FlipbookPageProps) {
+export default function FlipbookPage({ user, hasPurchased, bookSlug }: FlipbookPageProps) {
   const router = useRouter()
   const [showUserProfile, setShowUserProfile] = useState(false)
   const [userEmail, setUserEmail] = useState(user?.email ?? 'user@example.com')
@@ -163,7 +164,7 @@ export default function FlipbookPage({ user, hasPurchased }: FlipbookPageProps) 
 
               <iframe
                 ref={iframeRef}
-                src={process.env.NEXT_PUBLIC_BOOK_URL ?? '/book/index.html'}
+                src={`/flipbook-content/${bookSlug}/index.html`}
                 className="w-full h-full border-0"
                 title="Infinite Bloom Flipbook"
                 allowFullScreen
