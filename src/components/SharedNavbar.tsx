@@ -145,7 +145,7 @@ export default function SharedNavbar({ user, dark = false, transparent = false }
                   Hi, {firstName}
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-64">
+              <DropdownMenuContent align="end" className="w-64 z-[70]">
                 <DropdownMenuLabel className="text-xs text-[#aaa] font-normal uppercase tracking-widest">
                   My Purchases
                 </DropdownMenuLabel>
@@ -160,7 +160,7 @@ export default function SharedNavbar({ user, dark = false, transparent = false }
                       <div key={i} className="px-2 py-1.5">
                         <p className="text-sm text-[#111] leading-snug">
                           {p.product_type === 'flipbook'
-                            ? `Flipbook — ${purchasesData.deviceCount} of 3 devices active`
+                            ? `Flipbook — ${purchasesData.deviceCount} of 2 devices active`
                             : p.product_name}
                         </p>
                         <p className="text-xs text-[#aaa] mt-0.5">

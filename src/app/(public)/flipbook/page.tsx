@@ -1,14 +1,17 @@
 import { headers } from "next/headers"
 import { auth } from "@/lib/auth"
 import { sql } from "@/lib/db"
+import { checkDeviceAccess } from "@/lib/devices"
 import FlipbookPage from "@/components/FlipbookPage"
+import DeviceLimitScreen from "@/components/DeviceLimitScreen"
 
 // Only one active book/tenant today — Step 4 will resolve this from the
 // route/tenant context instead of a constant once a second book exists.
 const BOOK_SLUG = "kismet-krystle"
 
 export default async function FlipbookRoute() {
-  const session = await auth.api.getSession({ headers: await headers() })
+  const hdrs = await headers()
+  const session = await auth.api.getSession({ headers: hdrs })
 
   let hasPurchased = false
   if (session) {
@@ -24,6 +27,16 @@ export default async function FlipbookRoute() {
       LIMIT 1
     `
     hasPurchased = rows.length > 0
+  }
+
+  if (session && hasPurchased) {
+    const deviceId = hdrs.get("x-device-id")
+    if (deviceId) {
+      const { allowed } = await checkDeviceAccess(session.user.id, deviceId, hdrs.get("user-agent"))
+      if (!allowed) {
+        return <DeviceLimitScreen user={session.user} />
+      }
+    }
   }
 
   return (
