@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowUpRight } from 'lucide-react'
 import ContactOverlay from './ContactOverlay'
@@ -168,13 +168,21 @@ export default function BentoGrid({ user, hasPurchase, onHover, headingText, hea
 
   const anyOverlayOpen = contactOpen || pricingOpen || aboutOpen || signInOpen
 
+  // Deep link from the flipbook paywall CTA (?pricing=open) — auto-open the purchase overlay.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('pricing') === 'open') {
+      setPricingOpen(true)
+      window.history.replaceState(null, '', window.location.pathname)
+    }
+  }, [])
+
   const handleAccess = () => {
     router.push('/flipbook')
   }
 
   const handleAudio = () => {
     if (!user) { setSignInOpen(true); return }
-    router.push('/flipbook')
+    router.push('/audio')
   }
 
   return (
@@ -236,7 +244,7 @@ export default function BentoGrid({ user, hasPurchase, onHover, headingText, hea
           </h1>
         </div>
 
-        {/* Bottom grid: Audio + Events + Get the Book + Contact */}
+        {/* Bottom grid: Audio + Events + Get Book + Contact */}
         <div className="grid grid-cols-2 md:grid-cols-4 md:grid-rows-2 gap-[10px] flex-1 md:min-h-0">
 
           {/* Audio */}
@@ -289,17 +297,17 @@ export default function BentoGrid({ user, hasPurchase, onHover, headingText, hea
             <CardLabel light label="Events" animated isHovered={eventsHovered} />
           </BentoCard>
 
-          {/* Get the Book */}
+          {/* Get Book */}
           <BentoCard
             accent
             short
             className="col-span-1 md:col-span-1"
             onClick={() => setPricingOpen(true)}
-            hoverLabel="Get the Book"
+            hoverLabel="Get Book"
             onHover={onHover}
             onHoveredChange={setGetBookHovered}
           >
-            <CardLabel accent label="Get the book" animated isHovered={getBookHovered} />
+            <CardLabel accent label="Get Book" animated isHovered={getBookHovered} />
           </BentoCard>
 
           {/* Contact */}
@@ -307,11 +315,11 @@ export default function BentoGrid({ user, hasPurchase, onHover, headingText, hea
             short
             className="col-span-1 md:col-span-1"
             onClick={() => setContactOpen(true)}
-            hoverLabel="Contact"
+            hoverLabel="Contact & Follow"
             onHover={onHover}
             onHoveredChange={setContactHovered}
           >
-            <CardLabel label="Contact" animated isHovered={contactHovered} />
+            <CardLabel label="Contact & Follow" animated isHovered={contactHovered} />
           </BentoCard>
 
         </div>

@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import OverlayShell from "./OverlayShell"
+import { SOCIAL_LINKS } from "@/components/socialLinks"
 
 const INQUIRY_TYPES = ["Performance", "Writing", "Public Speaking", "Interview", "Other"]
 
@@ -42,7 +43,7 @@ export default function ContactOverlay({ onClose }: ContactOverlayProps) {
       <div className="flex flex-col md:flex-row min-h-screen">
         {/* Left — headline */}
         <div className="flex-1 flex flex-col justify-center px-8 md:px-16 py-20 border-b md:border-b-0 md:border-r border-[#d4d4d4]">
-          <p className="text-xs uppercase tracking-widest text-[#aaa] mb-4">Contact</p>
+          <p className="text-xs uppercase tracking-widest text-[#aaa] mb-4">Contact &amp; Follow</p>
           <h2 className="text-3xl md:text-4xl font-light text-[#111] leading-snug">
             Let&apos;s connect
           </h2>
@@ -52,6 +53,33 @@ export default function ContactOverlay({ onClose }: ContactOverlayProps) {
           >
             kismetthepoet@gmail.com
           </a>
+
+          <div className="flex items-center gap-4 mt-6">
+            {SOCIAL_LINKS.map(({ name, url, icon: Icon }) =>
+              url ? (
+                <a
+                  key={name}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={name}
+                  aria-label={name}
+                  className="text-[#888] hover:text-[#F27D26] transition-colors"
+                >
+                  <Icon className="w-5 h-5" />
+                </a>
+              ) : (
+                <span
+                  key={name}
+                  title={`Add your ${name} link in ContactOverlay.tsx`}
+                  aria-hidden="true"
+                  className="text-[#d4d4d4] cursor-not-allowed"
+                >
+                  <Icon className="w-5 h-5" />
+                </span>
+              )
+            )}
+          </div>
         </div>
 
         {/* Right — form */}

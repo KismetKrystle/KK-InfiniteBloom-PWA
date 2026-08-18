@@ -14,9 +14,11 @@ import UserTestimonialForm from './UserTestimonialForm'
 import PromptJournal from './PromptJournal'
 import SharedNavbar from './SharedNavbar'
 import FlipbookNavbar from './FlipbookNavbar'
+import CommentSection from './CommentSection'
 
 const PREVIEW_DURATION_S = 180
 const GRACE_PERIOD_MS = 10_000
+const SHOW_WRITE_REFLECT = false
 
 interface FlipbookPageProps {
   user: { id: string; name: string | null; email: string } | null
@@ -120,7 +122,7 @@ export default function FlipbookPage({ user, hasPurchased, bookSlug }: FlipbookP
         {/* Flipbook */}
         <div className="mb-4 md:mb-6">
           {showFlipbook ? (
-            <div className={isFullScreen ? 'fixed inset-0 z-50 bg-black' : 'relative max-w-4xl mx-auto w-full h-80 md:h-[600px] bg-gray-100 rounded-lg overflow-hidden shadow-xl'}>
+            <div className={isFullScreen ? 'fixed inset-0 z-50 bg-black' : 'relative max-w-4xl mx-auto w-full h-80 md:h-[600px] bg-white rounded-lg overflow-hidden shadow-xl'}>
               {!isFullScreen && (
                 <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
                   <button
@@ -194,7 +196,7 @@ export default function FlipbookPage({ user, hasPurchased, bookSlug }: FlipbookP
                     <h3 className="text-xl font-semibold text-[#111] mb-2">Enjoyed what you read?</h3>
                     <p className="text-sm text-[#666] mb-6">Get the full Infinite Bloom experience — every poem, every page.</p>
                     <a
-                      href="/"
+                      href={user ? '/' : '/?pricing=open'}
                       className="block w-full py-3 rounded-xl text-white font-medium text-sm transition-opacity hover:opacity-90"
                       style={{ backgroundColor: '#F27D26' }}
                     >
@@ -213,7 +215,7 @@ export default function FlipbookPage({ user, hasPurchased, bookSlug }: FlipbookP
               {/* Persistent floating button after paywall dismissed */}
               {!hasPurchased && paywallDismissed && (
                 <a
-                  href="/"
+                  href={user ? '/' : '/?pricing=open'}
                   className="absolute bottom-14 left-4 z-10 px-4 py-2 rounded-xl text-white text-sm font-medium shadow-lg transition-opacity hover:opacity-90"
                   style={{ backgroundColor: '#F27D26' }}
                 >
@@ -246,41 +248,47 @@ export default function FlipbookPage({ user, hasPurchased, bookSlug }: FlipbookP
         {/* Authenticated-only sections */}
         {user && (
           <>
-            <div className="mb-4 md:mb-6">
-              <Card className="bg-white rounded-xl shadow-lg border-0">
-                <CardContent className="p-4 md:p-8">
-                  <div className="mb-4 md:mb-6">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <h2 className="text-2xl font-bold">Write & Reflect Companion</h2>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 w-6 p-0 hover:bg-muted rounded-full"
-                        onClick={() => setShowReflectionsInfo(!showReflectionsInfo)}
-                        aria-label="Toggle reflections information"
-                      >
-                        <HelpCircle className="w-4 h-4 text-muted-foreground" />
-                      </Button>
-                    </div>
-                    {showReflectionsInfo && (
-                      <p className="text-sm text-muted-foreground leading-relaxed text-center">
-                        Explore thoughtful prompts, capture your insights, and preserve your reflections in one place.
-                        Your personal writing space for poetry, thoughts, and moments of clarity.
-                      </p>
-                    )}
-                  </div>
-                  <PromptJournal userId={user.id} />
-                </CardContent>
-              </Card>
-            </div>
+            {SHOW_WRITE_REFLECT && (
+              <>
+                <div className="mb-4 md:mb-6">
+                  <Card className="bg-white rounded-xl shadow-lg border-0">
+                    <CardContent className="p-4 md:p-8">
+                      <div className="mb-4 md:mb-6">
+                        <div className="flex items-center justify-center gap-2 mb-2">
+                          <h2 className="text-2xl font-bold">Write & Reflect Companion</h2>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0 hover:bg-muted rounded-full"
+                            onClick={() => setShowReflectionsInfo(!showReflectionsInfo)}
+                            aria-label="Toggle reflections information"
+                          >
+                            <HelpCircle className="w-4 h-4 text-muted-foreground" />
+                          </Button>
+                        </div>
+                        {showReflectionsInfo && (
+                          <p className="text-sm text-muted-foreground leading-relaxed text-center">
+                            Explore thoughtful prompts, capture your insights, and preserve your reflections in one place.
+                            Your personal writing space for poetry, thoughts, and moments of clarity.
+                          </p>
+                        )}
+                      </div>
+                      <PromptJournal userId={user.id} />
+                    </CardContent>
+                  </Card>
+                </div>
 
-            <div className="flex justify-center mb-4">
-              <div className="w-24 h-px bg-border"></div>
-            </div>
+                <div className="flex justify-center mb-4">
+                  <div className="w-24 h-px bg-border"></div>
+                </div>
+              </>
+            )}
 
             <div className="flex justify-center mb-4">
               <UserTestimonialForm userEmail={user.email} userName={user.name ?? ''} />
             </div>
+
+            <CommentSection context="flipbook" prompt="Tell us what you thought of the book." />
           </>
         )}
       </div>

@@ -1,6 +1,8 @@
 'use client'
 
+import { Mail } from "lucide-react"
 import OverlayShell from "./OverlayShell"
+import { SOCIAL_LINKS } from "@/components/socialLinks"
 
 interface AboutOverlayProps {
   onClose: () => void
@@ -36,6 +38,41 @@ export default function AboutOverlay({ onClose }: AboutOverlayProps) {
                   {tag}
                 </span>
               ))}
+            </div>
+
+            <div className="flex items-center gap-4 pt-2">
+              <a
+                href="mailto:kismetthepoet@gmail.com"
+                title="Email"
+                aria-label="Email"
+                className="text-[#888] hover:text-[#F27D26] transition-colors"
+              >
+                <Mail className="w-5 h-5" />
+              </a>
+              {SOCIAL_LINKS.map(({ name, url, icon: Icon }) =>
+                url ? (
+                  <a
+                    key={name}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={name}
+                    aria-label={name}
+                    className="text-[#888] hover:text-[#F27D26] transition-colors"
+                  >
+                    <Icon className="w-5 h-5" />
+                  </a>
+                ) : (
+                  <span
+                    key={name}
+                    title={`Add your ${name} link in socialLinks.tsx`}
+                    aria-hidden="true"
+                    className="text-[#d4d4d4] cursor-not-allowed"
+                  >
+                    <Icon className="w-5 h-5" />
+                  </span>
+                )
+              )}
             </div>
           </div>
 
