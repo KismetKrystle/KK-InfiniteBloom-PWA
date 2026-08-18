@@ -20,17 +20,17 @@ export default function AboutOverlay({ onClose }: AboutOverlayProps) {
               <div className="w-12 h-px bg-[#F27D26]" />
             </div>
             <p className="text-[#888] leading-relaxed text-sm">
-              Kismet Krystle is a poet, author, and speaker whose work sits at the
+              Kismet Krystle Wilson is a poet, author, entreprenuer and speaker whose work sits at the
               intersection of consciousness, creativity, and culture. With over two decades
               of lived experience woven into every line, her poetry invites readers into
-              quiet moments of recognition — the kind that shift something inside you.
+              quiet moments of recognition, the kind that shift something inside you.
             </p>
             <p className="text-[#888] leading-relaxed text-sm">
               The Infinite Bloom is her most intimate work yet: 45 poems, 45 audio
               narrations, and 143 insights designed to be returned to again and again.
             </p>
             <div className="flex flex-wrap gap-2 pt-2">
-              {["Poet", "Author", "Speaker"].map((tag) => (
+              {["Poet", "Author", "Speaker", "Entrepreneur"].map((tag) => (
                 <span
                   key={tag}
                   className="text-xs px-3 py-1 rounded-full border border-[#d4d4d4] text-[#888]"

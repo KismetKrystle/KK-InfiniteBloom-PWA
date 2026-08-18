@@ -373,7 +373,7 @@ CROSS JOIN (VALUES
 
   -- About
   ('about', 'heading',      '"About Kismet Krystle"'),
-  ('about', 'bio',          '"Kismet Krystle is a spoken word poet, author, and creative based in the United States. Her work explores self-discovery, consciousness, and the infinite nature of the human experience."'),
+  ('about', 'bio',          '"Kismet Krystle Wilson is a spoken word poet, author, and innovative entrepreneur from the United States. Her work explores self-discovery, consciousness, and the infinite nature of the human experience."'),
   ('about', 'photoUrl',     '""'),
   ('about', 'instagramUrl', '""'),
   ('about', 'twitterUrl',   '""'),

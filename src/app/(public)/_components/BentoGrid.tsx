@@ -208,7 +208,7 @@ export default function BentoGrid({ user, hasPurchase, onHover, headingText, hea
               alt="Kismet Krystle"
               className="absolute top-4 right-4 w-16 h-16 md:w-28 md:h-28 rounded-full object-cover object-top"
             />
-            <CardLabel label="About" sub="Poet · author · speaker" animated isHovered={aboutHovered} />
+            <CardLabel label="About" sub="Poet · Author · Speaker" animated isHovered={aboutHovered} />
           </BentoCard>
 
           {/* Access */}
@@ -230,7 +230,7 @@ export default function BentoGrid({ user, hasPurchase, onHover, headingText, hea
               className="absolute inset-x-0 bottom-0 pointer-events-none"
               style={{ height: '35%', background: 'linear-gradient(to top, rgba(235,235,235,0.95) 0%, transparent 100%)' }}
             />
-            <CardLabel label="Access Book" sub="Digital flipbook · audio · reflections" animated isHovered={accessHovered} />
+            <CardLabel label="Access Book" sub="Digital Flipbook" animated isHovered={accessHovered} />
           </BentoCard>
 
         </div>
@@ -272,7 +272,7 @@ export default function BentoGrid({ user, hasPurchase, onHover, headingText, hea
                 ))}
               </div>
             </div>
-            <CardLabel label="Audio poems" animated isHovered={audioHovered} />
+            <CardLabel label="Audio Poems" animated isHovered={audioHovered} />
           </BentoCard>
 
           {/* Events */}
