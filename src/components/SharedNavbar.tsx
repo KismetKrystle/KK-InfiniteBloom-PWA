@@ -19,6 +19,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { authClient } from '@/lib/auth-client'
+import AccountSettingsDialog from '@/components/AccountSettingsDialog'
 
 interface Purchase {
   product_name: string
@@ -48,6 +49,7 @@ export default function SharedNavbar({ user, dark = false, transparent = false }
   const [purchasesData, setPurchasesData] = useState<PurchasesData | null>(null)
   const [devices, setDevices] = useState<Device[]>([])
   const [devicesOpen, setDevicesOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
 
   const firstName = user?.name?.split(' ')[0] ?? user?.email?.split('@')[0] ?? 'Account'
@@ -181,6 +183,15 @@ export default function SharedNavbar({ user, dark = false, transparent = false }
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
+                  className="text-sm cursor-pointer"
+                  onClick={() => {
+                    setDropdownOpen(false)
+                    setSettingsOpen(true)
+                  }}
+                >
+                  Settings
+                </DropdownMenuItem>
+                <DropdownMenuItem
                   className="text-sm text-red-500 cursor-pointer focus:text-red-500"
                   onClick={handleSignOut}
                 >
@@ -240,6 +251,8 @@ export default function SharedNavbar({ user, dark = false, transparent = false }
           )}
         </DialogContent>
       </Dialog>
+
+      <AccountSettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </>
   )
 }

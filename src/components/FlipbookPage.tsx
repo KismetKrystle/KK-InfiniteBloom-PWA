@@ -4,9 +4,6 @@ import React, { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent } from './ui/card'
 import { Button } from './ui/button'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog'
-import { Input } from './ui/input'
-import { Label } from './ui/label'
 import { HelpCircle, Maximize, ExternalLink, X, User, Mail } from 'lucide-react'
 import { ImageWithFallback } from './figma/ImageWithFallback'
 
@@ -28,10 +25,6 @@ interface FlipbookPageProps {
 
 export default function FlipbookPage({ user, hasPurchased, bookSlug }: FlipbookPageProps) {
   const router = useRouter()
-  const [showUserProfile, setShowUserProfile] = useState(false)
-  const [userEmail, setUserEmail] = useState(user?.email ?? 'user@example.com')
-  const [newEmail, setNewEmail] = useState('')
-  const [isEditingEmail, setIsEditingEmail] = useState(false)
   const [showReflectionsInfo, setShowReflectionsInfo] = useState(false)
   const [showFlipbook, setShowFlipbook] = useState(false)
   const [isFullScreen, setIsFullScreen] = useState(false)
@@ -90,14 +83,6 @@ export default function FlipbookPage({ user, hasPurchased, bookSlug }: FlipbookP
   function handleDismissPaywall() {
     setPaywallActive(false)
     setPaywallDismissed(true)
-  }
-
-  const handleEmailUpdate = () => {
-    if (newEmail && newEmail !== userEmail) {
-      setUserEmail(newEmail)
-      setIsEditingEmail(false)
-      setNewEmail('')
-    }
   }
 
   return (
@@ -292,49 +277,6 @@ export default function FlipbookPage({ user, hasPurchased, bookSlug }: FlipbookP
           </>
         )}
       </div>
-
-      {user && (
-        <Dialog open={showUserProfile} onOpenChange={setShowUserProfile}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Profile & Settings</DialogTitle>
-              <DialogDescription>Manage your account details</DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div>
-                <Label className="text-sm font-medium">Name</Label>
-                <p className="text-sm text-muted-foreground">{user.name}</p>
-              </div>
-              <div>
-                <Label className="text-sm font-medium">Email Address</Label>
-                {isEditingEmail ? (
-                  <div className="space-y-2">
-                    <Input
-                      value={newEmail}
-                      onChange={(e) => setNewEmail(e.target.value)}
-                      placeholder="Enter new email"
-                      type="email"
-                    />
-                    <div className="flex space-x-2">
-                      <Button size="sm" onClick={handleEmailUpdate}>Save</Button>
-                      <Button size="sm" variant="outline" onClick={() => { setIsEditingEmail(false); setNewEmail('') }}>
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm text-muted-foreground">{userEmail}</p>
-                    <Button size="sm" variant="outline" onClick={() => { setIsEditingEmail(true); setNewEmail(userEmail) }}>
-                      Edit
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
     </div>
   )
 }

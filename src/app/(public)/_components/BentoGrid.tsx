@@ -6,7 +6,6 @@ import { ArrowUpRight } from 'lucide-react'
 import ContactOverlay from './ContactOverlay'
 import PricingOverlay from './PricingOverlay'
 import AboutOverlay from './AboutOverlay'
-import SignInOverlay from './SignInOverlay'
 import AnimatedCardTitle from '@/components/AnimatedCardTitle'
 
 interface User {
@@ -158,7 +157,6 @@ export default function BentoGrid({ user, hasPurchase, onHover, headingText, hea
   const [contactOpen, setContactOpen] = useState(false)
   const [pricingOpen, setPricingOpen] = useState(false)
   const [aboutOpen, setAboutOpen] = useState(false)
-  const [signInOpen, setSignInOpen] = useState(false)
   const [aboutHovered, setAboutHovered] = useState(false)
   const [accessHovered, setAccessHovered] = useState(false)
   const [audioHovered, setAudioHovered] = useState(false)
@@ -166,7 +164,7 @@ export default function BentoGrid({ user, hasPurchase, onHover, headingText, hea
   const [getBookHovered, setGetBookHovered] = useState(false)
   const [contactHovered, setContactHovered] = useState(false)
 
-  const anyOverlayOpen = contactOpen || pricingOpen || aboutOpen || signInOpen
+  const anyOverlayOpen = contactOpen || pricingOpen || aboutOpen
 
   // Deep link from the flipbook paywall CTA (?pricing=open) — auto-open the purchase overlay.
   useEffect(() => {
@@ -181,7 +179,6 @@ export default function BentoGrid({ user, hasPurchase, onHover, headingText, hea
   }
 
   const handleAudio = () => {
-    if (!user) { setSignInOpen(true); return }
     router.push('/audio')
   }
 
@@ -329,7 +326,6 @@ export default function BentoGrid({ user, hasPurchase, onHover, headingText, hea
       {contactOpen && <ContactOverlay onClose={() => setContactOpen(false)} />}
       {pricingOpen && <PricingOverlay onClose={() => setPricingOpen(false)} />}
       {aboutOpen   && <AboutOverlay   onClose={() => setAboutOpen(false)}   />}
-      {signInOpen  && <SignInOverlay  onClose={() => setSignInOpen(false)}  />}
     </>
   )
 }
