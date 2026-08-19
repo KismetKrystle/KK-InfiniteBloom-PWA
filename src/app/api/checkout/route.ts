@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
 import { sql } from '@/lib/db'
-import { stripe } from '@/lib/stripe'
+import { getStripe } from '@/lib/stripe'
 
 // Only one active book/tenant today — same convention as the flipbook route.
 const BOOK_SLUG = 'kismet-krystle'
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
 
   const origin = request.nextUrl.origin
 
-  const checkoutSession = await stripe.checkout.sessions.create({
+  const checkoutSession = await getStripe().checkout.sessions.create({
     mode: 'payment',
     line_items: [{ price: product.stripe_price_id, quantity: 1 }],
     success_url: `${origin}/flipbook?purchase=success`,
