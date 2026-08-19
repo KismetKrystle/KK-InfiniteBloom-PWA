@@ -7,7 +7,7 @@ import { Button } from './ui/button'
 import { HelpCircle, Maximize, ExternalLink, X, User, Mail } from 'lucide-react'
 import { ImageWithFallback } from './figma/ImageWithFallback'
 
-import UserTestimonialForm from './UserTestimonialForm'
+import ExperienceShareDialog from './ExperienceShareDialog'
 import PromptJournal from './PromptJournal'
 import SharedNavbar from './SharedNavbar'
 import FlipbookNavbar from './FlipbookNavbar'
@@ -155,6 +155,21 @@ export default function FlipbookPage({ user, hasPurchased, bookSlug }: FlipbookP
                 className="w-full h-full border-0"
                 title="Infinite Bloom Flipbook"
                 allowFullScreen
+                onLoad={() => {
+                  // Served same-origin through our own proxy route, so we can
+                  // reach in and override the reader's default gray backdrop.
+                  try {
+                    const doc = iframeRef.current?.contentDocument
+                    if (!doc) return
+                    doc.documentElement.style.background = '#ffffff'
+                    doc.body.style.background = '#ffffff'
+                    const style = doc.createElement('style')
+                    style.textContent = 'html, body { background: #ffffff !important; }'
+                    doc.head.appendChild(style)
+                  } catch {
+                    // Not reachable for some reason — leave the reader's own background as-is.
+                  }
+                }}
               />
 
               {/* Transparent first-interaction capture overlay — sits above iframe, below controls */}
@@ -209,24 +224,23 @@ export default function FlipbookPage({ user, hasPurchased, bookSlug }: FlipbookP
               )}
             </div>
           ) : (
-            <Card className="max-w-4xl mx-auto group cursor-pointer hover:shadow-2xl transition-all duration-300 hover:-translate-y-2" onClick={() => setShowFlipbook(true)}>
-              <CardContent className="p-4 md:p-8">
-                <div className="relative">
-                  <ImageWithFallback
-                    src="https://ik.imagekit.io/kis84/Cover%204.png?updatedAt=1759400255592"
-                    alt="Infinite Bloom - Poetry Collection"
-                    className="w-full h-80 md:h-[600px] object-contain rounded-lg shadow-lg group-hover:shadow-xl transition-shadow duration-300"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="bg-primary text-primary-foreground px-6 py-3 rounded-lg flex items-center space-x-2 shadow-lg">
-                      <ExternalLink className="w-5 h-5" />
-                      <span className="font-medium">Open Book</span>
-                    </div>
-                  </div>
+            <div
+              className="relative max-w-4xl mx-auto group cursor-pointer transition-transform duration-300 hover:-translate-y-2"
+              onClick={() => setShowFlipbook(true)}
+            >
+              <ImageWithFallback
+                src="/flipbook-cover.png"
+                alt="Infinite Bloom - Poetry Collection"
+                className="w-full h-80 md:h-[600px] object-contain rounded-2xl shadow-xl group-hover:shadow-2xl transition-shadow duration-300"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="bg-primary text-primary-foreground px-6 py-3 rounded-lg flex items-center space-x-2 shadow-lg">
+                  <ExternalLink className="w-5 h-5" />
+                  <span className="font-medium">Open Book</span>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )}
         </div>
 
@@ -270,7 +284,7 @@ export default function FlipbookPage({ user, hasPurchased, bookSlug }: FlipbookP
             )}
 
             <div className="flex justify-center mb-4">
-              <UserTestimonialForm userEmail={user.email} userName={user.name ?? ''} />
+              <ExperienceShareDialog userEmail={user.email} userName={user.name ?? ''} />
             </div>
 
             <CommentSection context="flipbook" prompt="Tell us what you thought of the book." />

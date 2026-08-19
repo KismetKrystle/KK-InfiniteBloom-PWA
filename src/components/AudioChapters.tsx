@@ -47,6 +47,7 @@ export default function AudioChapters() {
 
   return (
     <div>
+      <p className="text-xs uppercase tracking-widest text-[#aaa] mb-2">Select a Chapter</p>
       <select
         value={active}
         onChange={(e) => setActive(Number(e.target.value))}

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Navbar from './Navbar'
 import BentoGrid from './BentoGrid'
+import HeroSection from './HeroSection'
 
 interface User {
   id: string
@@ -40,24 +41,33 @@ export default function Homepage({ user, hasPurchase }: HomepageProps) {
   }
 
   return (
-    <main className="min-h-screen md:h-screen md:overflow-hidden bg-[#f5f5f5] flex flex-col">
-      <Navbar user={user} />
+    // Extra height below the viewport gives the page something to actually
+    // scroll through while the hero overlay fades — the landing page itself
+    // stays pinned (sticky) at the top the whole time, unchanged underneath.
+    <div className="relative" style={{ height: 'calc(100vh + 600px)' }}>
+      <HeroSection />
 
-      <div className="h-16 flex-shrink-0" />
+      <div className="sticky top-0">
+        <main className="min-h-screen md:h-screen md:overflow-hidden bg-[#f5f5f5] flex flex-col">
+          <Navbar user={user} />
 
-      <div className="flex-1 md:min-h-0 md:overflow-hidden px-4">
-        <BentoGrid
-          user={user}
-          hasPurchase={hasPurchase}
-          onHover={handleHover}
-          headingText={headingText}
-          headingPulsed={headingPulsed}
-        />
+          <div className="h-16 flex-shrink-0" />
+
+          <div className="flex-1 md:min-h-0 md:overflow-hidden px-4">
+            <BentoGrid
+              user={user}
+              hasPurchase={hasPurchase}
+              onHover={handleHover}
+              headingText={headingText}
+              headingPulsed={headingPulsed}
+            />
+          </div>
+
+          <footer className="relative flex-shrink-0 py-4 text-center text-xs text-[#aaa]">
+            Krystle Wilson © 2026
+          </footer>
+        </main>
       </div>
-
-      <footer className="relative flex-shrink-0 py-4 text-center text-xs text-[#aaa]">
-        Krystle Wilson © 2026
-      </footer>
-    </main>
+    </div>
   )
 }

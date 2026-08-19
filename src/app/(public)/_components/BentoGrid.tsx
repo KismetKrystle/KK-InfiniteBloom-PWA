@@ -203,7 +203,7 @@ export default function BentoGrid({ user, hasPurchase, onHover, headingText, hea
             <img
               src="https://res.cloudinary.com/dsoojlgg1/image/upload/v1765783633/Kismet_head_shot_wprdoh.jpg"
               alt="Kismet Krystle"
-              className="absolute top-4 right-4 w-16 h-16 md:w-28 md:h-28 rounded-full object-cover object-top"
+              className="absolute top-9 right-4 w-20 h-20 md:w-36 md:h-36 rounded-full object-cover object-top"
             />
             <CardLabel label="About" sub="Poet · Author · Speaker" animated isHovered={aboutHovered} />
           </BentoCard>
@@ -324,7 +324,7 @@ export default function BentoGrid({ user, hasPurchase, onHover, headingText, hea
       </div>
 
       {contactOpen && <ContactOverlay onClose={() => setContactOpen(false)} />}
-      {pricingOpen && <PricingOverlay onClose={() => setPricingOpen(false)} />}
+      {pricingOpen && <PricingOverlay onClose={() => setPricingOpen(false)} user={user} />}
       {aboutOpen   && <AboutOverlay   onClose={() => setAboutOpen(false)}   />}
     </>
   )

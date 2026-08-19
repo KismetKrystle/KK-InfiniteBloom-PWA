@@ -71,3 +71,13 @@ html {
   50%  { transform: scale(1.08); }
   100% { transform: scale(1); }
 }
+
+@keyframes marqueeLeft {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@keyframes marqueeRight {
+  from { transform: translateX(-50%); }
+  to   { transform: translateX(0); }
+}
