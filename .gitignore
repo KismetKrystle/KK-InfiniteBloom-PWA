@@ -76,3 +76,5 @@ coverage/
 .DS_Store
 Thumbs.db
 .vscode-test
+
+.vercel

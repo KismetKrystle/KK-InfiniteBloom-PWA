@@ -62,6 +62,16 @@ export default function FlipbookPage({ user, hasPurchased, bookSlug }: FlipbookP
     return () => document.removeEventListener('fullscreenchange', onFullscreenChange)
   }, [isFullScreen])
 
+  // Offline reading for purchasers only — scoped so it can never intercept
+  // anything outside the book reader, and it only ever caches responses the
+  // server already marked long-lived for a purchased viewer (see
+  // flipbook-sw.js and the flipbook-content route).
+  useEffect(() => {
+    if (hasPurchased && 'serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/flipbook-sw.js', { scope: '/flipbook-content/' }).catch(() => {})
+    }
+  }, [hasPurchased])
+
   function handleFirstInteraction() {
     console.log('[Paywall] First click detected — starting grace period', GRACE_PERIOD_MS, 'ms')
     setInteractionCaptured(true)
