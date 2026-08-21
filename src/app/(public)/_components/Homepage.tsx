@@ -24,11 +24,19 @@ export default function Homepage({ user, hasPurchase }: HomepageProps) {
   const isFirstRender = useRef(true)
 
   // Arriving from another page via the navbar logo (?section=bento) should
-  // land past the hero, on the bento grid, instead of at the top.
+  // land past the hero, on the bento grid, instead of at the top. Browsers
+  // auto-restore the last scroll position for a URL on load by default,
+  // which would otherwise cause that same jump on every plain visit too —
+  // take manual control so it only happens when the flag says so.
   useLayoutEffect(() => {
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual'
+    }
     if (new URLSearchParams(window.location.search).get('section') === 'bento') {
       window.scrollTo(0, 520)
       window.history.replaceState(null, '', window.location.pathname)
+    } else {
+      window.scrollTo(0, 0)
     }
   }, [])
 
