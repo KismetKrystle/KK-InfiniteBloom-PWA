@@ -308,11 +308,11 @@ export default function BentoGrid({ user, hasPurchase, onHover, headingText, hea
           <BentoCard
             className="col-span-1 md:col-span-1"
             onClick={() => setContactOpen(true)}
-            hoverLabel="Contact"
+            hoverLabel="Connect"
             onHover={onHover}
             onHoveredChange={setContactHovered}
           >
-            <CardLabel label="Contact & Follow" animated isHovered={contactHovered} />
+            <CardLabel label="Connect" animated isHovered={contactHovered} />
           </BentoCard>
 
         </div>
