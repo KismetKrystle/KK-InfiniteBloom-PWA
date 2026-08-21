@@ -52,7 +52,7 @@ export default async function AudioPage() {
 
         <DonateSection />
 
-        <CommentSection context="audio" prompt="Tell us what these poems meant to you." />
+        <CommentSection context="audio" prompt="Tell us what these poems meant to you." user={session?.user ?? null} />
       </main>
 
       {!session && <AudioSignupGate />}

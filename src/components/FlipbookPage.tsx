@@ -244,52 +244,50 @@ export default function FlipbookPage({ user, hasPurchased, bookSlug }: FlipbookP
           )}
         </div>
 
-        {/* Authenticated-only sections */}
-        {user && (
+        {/* Authenticated-only: personal reflection journal */}
+        {user && SHOW_WRITE_REFLECT && (
           <>
-            {SHOW_WRITE_REFLECT && (
-              <>
-                <div className="mb-4 md:mb-6">
-                  <Card className="bg-white rounded-xl shadow-lg border-0">
-                    <CardContent className="p-4 md:p-8">
-                      <div className="mb-4 md:mb-6">
-                        <div className="flex items-center justify-center gap-2 mb-2">
-                          <h2 className="text-2xl font-bold">Write & Reflect Companion</h2>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0 hover:bg-muted rounded-full"
-                            onClick={() => setShowReflectionsInfo(!showReflectionsInfo)}
-                            aria-label="Toggle reflections information"
-                          >
-                            <HelpCircle className="w-4 h-4 text-muted-foreground" />
-                          </Button>
-                        </div>
-                        {showReflectionsInfo && (
-                          <p className="text-sm text-muted-foreground leading-relaxed text-center">
-                            Explore thoughtful prompts, capture your insights, and preserve your reflections in one place.
-                            Your personal writing space for poetry, thoughts, and moments of clarity.
-                          </p>
-                        )}
-                      </div>
-                      <PromptJournal userId={user.id} />
-                    </CardContent>
-                  </Card>
-                </div>
-
-                <div className="flex justify-center mb-4">
-                  <div className="w-24 h-px bg-border"></div>
-                </div>
-              </>
-            )}
-
-            <div className="flex justify-center mb-4">
-              <ExperienceShareDialog userEmail={user.email} userName={user.name ?? ''} />
+            <div className="mb-4 md:mb-6">
+              <Card className="bg-white rounded-xl shadow-lg border-0">
+                <CardContent className="p-4 md:p-8">
+                  <div className="mb-4 md:mb-6">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <h2 className="text-2xl font-bold">Write & Reflect Companion</h2>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 hover:bg-muted rounded-full"
+                        onClick={() => setShowReflectionsInfo(!showReflectionsInfo)}
+                        aria-label="Toggle reflections information"
+                      >
+                        <HelpCircle className="w-4 h-4 text-muted-foreground" />
+                      </Button>
+                    </div>
+                    {showReflectionsInfo && (
+                      <p className="text-sm text-muted-foreground leading-relaxed text-center">
+                        Explore thoughtful prompts, capture your insights, and preserve your reflections in one place.
+                        Your personal writing space for poetry, thoughts, and moments of clarity.
+                      </p>
+                    )}
+                  </div>
+                  <PromptJournal userId={user.id} />
+                </CardContent>
+              </Card>
             </div>
 
-            <CommentSection context="flipbook" prompt="Tell us what you thought of the book." />
+            <div className="flex justify-center mb-4">
+              <div className="w-24 h-px bg-border"></div>
+            </div>
           </>
         )}
+
+        {/* Share and comments — open to everyone; posting a comment or
+            testimonial still requires signing in (handled within each). */}
+        <div className="flex justify-center mb-4">
+          <ExperienceShareDialog userEmail={user?.email ?? null} userName={user?.name ?? null} />
+        </div>
+
+        <CommentSection context="flipbook" prompt="Tell us what you thought of the book." user={user} />
       </div>
     </div>
   )

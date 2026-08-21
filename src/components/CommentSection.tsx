@@ -24,9 +24,10 @@ interface Comment {
 interface CommentSectionProps {
   context: 'audio' | 'flipbook'
   prompt?: string
+  user?: { id: string; name: string | null; email: string } | null
 }
 
-export default function CommentSection({ context, prompt = 'Tell us what you thought.' }: CommentSectionProps) {
+export default function CommentSection({ context, prompt = 'Tell us what you thought.', user }: CommentSectionProps) {
   const [comments, setComments] = useState<Comment[]>([])
   const [content, setContent] = useState('')
   const [status, setStatus] = useState<'idle' | 'submitting' | 'error'>('idle')
@@ -131,30 +132,36 @@ export default function CommentSection({ context, prompt = 'Tell us what you tho
       <h2 className="text-sm font-semibold text-[#111] mb-1">Comments</h2>
       <p className="text-sm text-[#666] mb-3">{prompt}</p>
 
-      <form onSubmit={handleSubmit} className="space-y-3 mb-6">
-        <textarea
-          value={content}
-          onChange={(e) => {
-            setContent(e.target.value)
-            if (status === 'error') setStatus('idle')
-          }}
-          placeholder="Share your thoughts…"
-          rows={4}
-          maxLength={2000}
-          className="w-full px-4 py-3 rounded-xl border border-[#d4d4d4] text-sm text-[#111] outline-none focus:border-[#F27D26] transition-colors resize-none"
-        />
-        <div className="flex items-center gap-3">
-          <button
-            type="submit"
-            disabled={!content.trim() || status === 'submitting'}
-            className="px-5 py-2 rounded-xl text-white font-medium text-sm transition-opacity hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
-            style={{ backgroundColor: '#F27D26' }}
-          >
-            {status === 'submitting' ? 'Sending…' : 'Submit'}
-          </button>
-          {status === 'error' && <span className="text-sm text-red-500">Something went wrong. Please try again.</span>}
-        </div>
-      </form>
+      {user ? (
+        <form onSubmit={handleSubmit} className="space-y-3 mb-6">
+          <textarea
+            value={content}
+            onChange={(e) => {
+              setContent(e.target.value)
+              if (status === 'error') setStatus('idle')
+            }}
+            placeholder="Share your thoughts…"
+            rows={4}
+            maxLength={2000}
+            className="w-full px-4 py-3 rounded-xl border border-[#d4d4d4] text-sm text-[#111] outline-none focus:border-[#F27D26] transition-colors resize-none"
+          />
+          <div className="flex items-center gap-3">
+            <button
+              type="submit"
+              disabled={!content.trim() || status === 'submitting'}
+              className="px-5 py-2 rounded-xl text-white font-medium text-sm transition-opacity hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{ backgroundColor: '#F27D26' }}
+            >
+              {status === 'submitting' ? 'Sending…' : 'Submit'}
+            </button>
+            {status === 'error' && <span className="text-sm text-red-500">Something went wrong. Please try again.</span>}
+          </div>
+        </form>
+      ) : (
+        <p className="text-sm text-[#666] mb-6">
+          <a href="/login" className="text-[#F27D26] hover:underline">Sign in</a> to leave a comment.
+        </p>
+      )}
 
       {comments.length > 0 && (
         <div className="space-y-3">

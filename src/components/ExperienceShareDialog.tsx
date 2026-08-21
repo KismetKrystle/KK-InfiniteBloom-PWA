@@ -1,19 +1,22 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Heart, Share2, MessageSquareQuote, ArrowLeft } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog'
 import UserTestimonialForm from './UserTestimonialForm'
 
 interface ExperienceShareDialogProps {
-  userEmail: string
-  userName: string
+  userEmail: string | null
+  userName: string | null
 }
 
 const DEFAULT_SHARE_TEXT =
   'Just experienced The Infinite Bloom by Kismet Krystle — poetry, audio narrations, and reflections in one place.'
 
 export default function ExperienceShareDialog({ userEmail, userName }: ExperienceShareDialogProps) {
+  const router = useRouter()
+  const signedIn = Boolean(userEmail)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [view, setView] = useState<'choice' | 'compose'>('choice')
   const [message, setMessage] = useState(DEFAULT_SHARE_TEXT)
@@ -77,14 +80,20 @@ export default function ExperienceShareDialog({ userEmail, userName }: Experienc
                 <button
                   onClick={() => {
                     setDialogOpen(false)
-                    setTestimonialOpen(true)
+                    if (signedIn) {
+                      setTestimonialOpen(true)
+                    } else {
+                      router.push('/login')
+                    }
                   }}
                   className="w-full flex items-center gap-3 p-4 rounded-xl border border-border hover:border-pink-300 hover:bg-pink-50/50 transition-colors text-left"
                 >
                   <MessageSquareQuote className="w-5 h-5 text-pink-500 shrink-0" />
                   <div>
                     <p className="text-sm font-medium">Leave a Testimonial</p>
-                    <p className="text-xs text-muted-foreground">Share a quote that may be featured on the site.</p>
+                    <p className="text-xs text-muted-foreground">
+                      {signedIn ? 'Share a quote that may be featured on the site.' : 'Sign in to share a quote that may be featured on the site.'}
+                    </p>
                   </div>
                 </button>
 
@@ -161,12 +170,14 @@ export default function ExperienceShareDialog({ userEmail, userName }: Experienc
         </DialogContent>
       </Dialog>
 
-      <UserTestimonialForm
-        userEmail={userEmail}
-        userName={userName}
-        open={testimonialOpen}
-        onClose={() => setTestimonialOpen(false)}
-      />
+      {signedIn && (
+        <UserTestimonialForm
+          userEmail={userEmail!}
+          userName={userName ?? ''}
+          open={testimonialOpen}
+          onClose={() => setTestimonialOpen(false)}
+        />
+      )}
     </>
   )
 }
