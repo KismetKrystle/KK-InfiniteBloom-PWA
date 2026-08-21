@@ -12,7 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 
 export default function LoginPage() {
   const router = useRouter()
-  const [mode, setMode] = useState<"signin" | "signup">("signin")
+  const [mode, setMode] = useState<"signin" | "signup" | null>(null)
 
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
@@ -25,6 +25,11 @@ export default function LoginPage() {
   const [googleLoading, setGoogleLoading] = useState(false)
 
   const busy = loading || googleLoading
+
+  function selectMode(next: "signin" | "signup") {
+    setMode(next)
+    setError("")
+  }
 
   async function handleSignIn(e: React.FormEvent) {
     e.preventDefault()
@@ -86,157 +91,157 @@ export default function LoginPage() {
         {/* Wordmark */}
         <div className="text-center space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight">Infinite Bloom</h1>
-          <p className="text-sm text-muted-foreground">
-            {mode === "signup" ? "Create an account to access your copy" : "Sign in to access your copy"}
-          </p>
+          <p className="text-sm text-muted-foreground">Access your copy</p>
         </div>
 
-        {/* Google */}
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full"
-          onClick={handleGoogleLogin}
-          disabled={busy}
-        >
-          {googleLoading ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <GoogleIcon />
-          )}
-          {googleLoading ? "Connecting…" : "Continue with Google"}
-        </Button>
-
-        {/* Divider */}
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-border" />
-          </div>
-          <div className="relative flex justify-center text-xs">
-            <span className="bg-background px-3 text-muted-foreground">or</span>
+        {/* Pill toggle */}
+        <div className="flex justify-center">
+          <div className="inline-flex rounded-full border border-border p-1">
+            <button
+              type="button"
+              onClick={() => selectMode("signup")}
+              className={`px-5 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                mode === "signup" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Create Account
+            </button>
+            <button
+              type="button"
+              onClick={() => selectMode("signin")}
+              className={`px-5 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                mode === "signin" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Log In
+            </button>
           </div>
         </div>
 
-        {/* Email / password */}
-        <form onSubmit={mode === "signup" ? handleSignUp : handleSignIn} className="space-y-4">
-          {mode === "signup" && (
-            <div className="grid grid-cols-2 gap-4">
+        {mode && (
+          <>
+            {/* Google */}
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={handleGoogleLogin}
+              disabled={busy}
+            >
+              {googleLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <GoogleIcon />
+              )}
+              {googleLoading ? "Connecting…" : "Continue with Google"}
+            </Button>
+
+            {/* Divider */}
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="bg-background px-3 text-muted-foreground">or</span>
+              </div>
+            </div>
+
+            {/* Email / password */}
+            <form onSubmit={mode === "signup" ? handleSignUp : handleSignIn} className="space-y-4">
+              {mode === "signup" && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Name</Label>
+                    <Input
+                      id="name"
+                      autoComplete="name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                      disabled={busy}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      autoComplete="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      disabled={busy}
+                    />
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
-                  id="name"
-                  autoComplete="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={busy}
                 />
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Password</Label>
+                  {mode === "signin" && (
+                    <Link
+                      href="/forgot-password"
+                      className="text-xs text-muted-foreground underline hover:text-foreground transition-colors"
+                    >
+                      Forgot password?
+                    </Link>
+                  )}
+                </div>
                 <Input
-                  id="phone"
-                  type="tel"
-                  autoComplete="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  id="password"
+                  type="password"
+                  autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
                   disabled={busy}
                 />
               </div>
-            </div>
-          )}
 
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              autoComplete="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={busy}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password">Password</Label>
-              {mode === "signin" && (
-                <Link
-                  href="/forgot-password"
-                  className="text-xs text-muted-foreground underline hover:text-foreground transition-colors"
-                >
-                  Forgot password?
-                </Link>
+              {mode === "signup" && (
+                <div className="flex items-start gap-2">
+                  <Checkbox
+                    id="marketingConsent"
+                    checked={marketingConsent}
+                    onCheckedChange={(checked) => setMarketingConsent(checked === true)}
+                    disabled={busy}
+                  />
+                  <Label htmlFor="marketingConsent" className="text-xs font-normal text-muted-foreground leading-snug">
+                    Email me with new poems, updates, and blog posts.
+                  </Label>
+                </div>
               )}
-            </div>
-            <Input
-              id="password"
-              type="password"
-              autoComplete={mode === "signup" ? "new-password" : "current-password"}
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              disabled={busy}
-            />
-          </div>
 
-          {mode === "signup" && (
-            <div className="flex items-start gap-2">
-              <Checkbox
-                id="marketingConsent"
-                checked={marketingConsent}
-                onCheckedChange={(checked) => setMarketingConsent(checked === true)}
-                disabled={busy}
-              />
-              <Label htmlFor="marketingConsent" className="text-xs font-normal text-muted-foreground leading-snug">
-                Email me with new poems, updates, and blog posts.
-              </Label>
-            </div>
-          )}
+              {error && (
+                <p className="text-sm text-destructive" role="alert">
+                  {error}
+                </p>
+              )}
 
-          {error && (
-            <p className="text-sm text-destructive" role="alert">
-              {error}
-            </p>
-          )}
-
-          <Button type="submit" className="w-full" disabled={busy}>
-            {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-            {loading
-              ? mode === "signup" ? "Creating account…" : "Signing in…"
-              : mode === "signup" ? "Create Account" : "Sign In"}
-          </Button>
-        </form>
-
-        <p className="text-sm text-center text-muted-foreground">
-          {mode === "signup" ? (
-            <>
-              Already have an account?{" "}
-              <button
-                type="button"
-                onClick={() => { setMode("signin"); setError("") }}
-                className="text-foreground underline hover:no-underline"
-              >
-                Sign in
-              </button>
-            </>
-          ) : (
-            <>
-              New here?{" "}
-              <button
-                type="button"
-                onClick={() => { setMode("signup"); setError("") }}
-                className="text-foreground underline hover:no-underline"
-              >
-                Create an account
-              </button>
-            </>
-          )}
-        </p>
+              <Button type="submit" className="w-full" disabled={busy}>
+                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                {loading
+                  ? mode === "signup" ? "Creating account…" : "Signing in…"
+                  : mode === "signup" ? "Create Account" : "Sign In"}
+              </Button>
+            </form>
+          </>
+        )}
 
       </div>
     </main>

@@ -12,7 +12,7 @@ interface SignInOverlayProps {
 
 export default function SignInOverlay({ onClose }: SignInOverlayProps) {
   const router = useRouter()
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin')
+  const [mode, setMode] = useState<'signin' | 'signup' | null>(null)
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -25,6 +25,11 @@ export default function SignInOverlay({ onClose }: SignInOverlayProps) {
   const [googleLoading, setGoogleLoading] = useState(false)
 
   const busy = loading || googleLoading
+
+  function selectMode(next: 'signin' | 'signup') {
+    setMode(next)
+    setError('')
+  }
 
   async function handleSignIn(e: React.FormEvent) {
     e.preventDefault()
@@ -81,141 +86,150 @@ export default function SignInOverlay({ onClose }: SignInOverlayProps) {
         {/* Left */}
         <div className="flex-1 flex flex-col justify-center px-8 md:px-16 py-20 border-b md:border-b-0 md:border-r border-[#d4d4d4]">
           <p className="text-xs uppercase tracking-widest text-[#aaa] mb-4">
-            {mode === 'signup' ? 'New here' : 'Welcome back'}
+            {mode === 'signup' ? 'New here' : mode === 'signin' ? 'Welcome back' : 'Infinite Bloom'}
           </p>
           <h2 className="text-3xl md:text-4xl font-light text-[#111] leading-snug">
-            {mode === 'signup' ? <>Create your<br />account</> : <>Sign in to<br />Infinite Bloom</>}
+            {mode === 'signup' ? (
+              <>Create your<br />account</>
+            ) : mode === 'signin' ? (
+              <>Sign in to<br />Infinite Bloom</>
+            ) : (
+              <>Access your<br />copy</>
+            )}
           </h2>
         </div>
 
         {/* Right */}
         <div className="flex-1 flex flex-col justify-center px-8 md:px-16 py-20">
           <div className="w-full max-w-md space-y-6">
-            <button
-              type="button"
-              onClick={handleGoogleLogin}
-              disabled={busy}
-              className="w-full flex items-center justify-center gap-3 py-2.5 rounded-xl border border-[#d4d4d4] text-sm text-[#111] hover:border-[#aaa] transition-colors disabled:opacity-50"
-            >
-              {googleLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <GoogleIcon />}
-              {googleLoading ? 'Connecting…' : 'Continue with Google'}
-            </button>
 
-            <div className="flex items-center gap-3">
-              <div className="flex-1 h-px bg-[#d4d4d4]" />
-              <span className="text-xs text-[#aaa]">or</span>
-              <div className="flex-1 h-px bg-[#d4d4d4]" />
+            {/* Pill toggle */}
+            <div className="flex justify-center">
+              <div className="inline-flex rounded-full border border-[#d4d4d4] p-1">
+                <button
+                  type="button"
+                  onClick={() => selectMode('signup')}
+                  className={`px-5 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                    mode === 'signup' ? 'bg-[#111] text-white' : 'text-[#888] hover:text-[#111]'
+                  }`}
+                >
+                  Create Account
+                </button>
+                <button
+                  type="button"
+                  onClick={() => selectMode('signin')}
+                  className={`px-5 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                    mode === 'signin' ? 'bg-[#111] text-white' : 'text-[#888] hover:text-[#111]'
+                  }`}
+                >
+                  Log In
+                </button>
+              </div>
             </div>
 
-            <form onSubmit={mode === 'signup' ? handleSignUp : handleSignIn} className="space-y-5">
-              {mode === 'signup' && (
-                <div className="grid grid-cols-2 gap-4">
+            {mode && (
+              <>
+                <button
+                  type="button"
+                  onClick={handleGoogleLogin}
+                  disabled={busy}
+                  className="w-full flex items-center justify-center gap-3 py-2.5 rounded-xl border border-[#d4d4d4] text-sm text-[#111] hover:border-[#aaa] transition-colors disabled:opacity-50"
+                >
+                  {googleLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <GoogleIcon />}
+                  {googleLoading ? 'Connecting…' : 'Continue with Google'}
+                </button>
+
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 h-px bg-[#d4d4d4]" />
+                  <span className="text-xs text-[#aaa]">or</span>
+                  <div className="flex-1 h-px bg-[#d4d4d4]" />
+                </div>
+
+                <form onSubmit={mode === 'signup' ? handleSignUp : handleSignIn} className="space-y-5">
+                  {mode === 'signup' && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-xs text-[#aaa] uppercase tracking-widest">Name</label>
+                        <input
+                          required
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          disabled={busy}
+                          className="w-full bg-transparent border-b border-[#d4d4d4] py-2 text-[#111] text-sm outline-none focus:border-[#F27D26] transition-colors"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs text-[#aaa] uppercase tracking-widest">Phone</label>
+                        <input
+                          type="tel"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          disabled={busy}
+                          className="w-full bg-transparent border-b border-[#d4d4d4] py-2 text-[#111] text-sm outline-none focus:border-[#F27D26] transition-colors"
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   <div className="space-y-1">
-                    <label className="text-xs text-[#aaa] uppercase tracking-widest">Name</label>
+                    <label className="text-xs text-[#aaa] uppercase tracking-widest">Email</label>
                     <input
                       required
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                       disabled={busy}
                       className="w-full bg-transparent border-b border-[#d4d4d4] py-2 text-[#111] text-sm outline-none focus:border-[#F27D26] transition-colors"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs text-[#aaa] uppercase tracking-widest">Phone</label>
+                    <label className="text-xs text-[#aaa] uppercase tracking-widest">Password</label>
                     <input
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
+                      required
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
                       disabled={busy}
                       className="w-full bg-transparent border-b border-[#d4d4d4] py-2 text-[#111] text-sm outline-none focus:border-[#F27D26] transition-colors"
                     />
+                    {mode === 'signin' && (
+                      <div className="text-right">
+                        <a href="/forgot-password" className="text-xs text-[#aaa] hover:text-[#111] transition-colors">
+                          Forgot password?
+                        </a>
+                      </div>
+                    )}
                   </div>
-                </div>
-              )}
 
-              <div className="space-y-1">
-                <label className="text-xs text-[#aaa] uppercase tracking-widest">Email</label>
-                <input
-                  required
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={busy}
-                  className="w-full bg-transparent border-b border-[#d4d4d4] py-2 text-[#111] text-sm outline-none focus:border-[#F27D26] transition-colors"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs text-[#aaa] uppercase tracking-widest">Password</label>
-                <input
-                  required
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={busy}
-                  className="w-full bg-transparent border-b border-[#d4d4d4] py-2 text-[#111] text-sm outline-none focus:border-[#F27D26] transition-colors"
-                />
-                {mode === 'signin' && (
-                  <div className="text-right">
-                    <a href="/forgot-password" className="text-xs text-[#aaa] hover:text-[#111] transition-colors">
-                      Forgot password?
-                    </a>
-                  </div>
-                )}
-              </div>
+                  {mode === 'signup' && (
+                    <label className="flex items-start gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={marketingConsent}
+                        onChange={(e) => setMarketingConsent(e.target.checked)}
+                        disabled={busy}
+                        className="mt-0.5 accent-[#F27D26]"
+                      />
+                      <span className="text-xs text-[#888] leading-snug">
+                        Email me with new poems, updates, and blog posts.
+                      </span>
+                    </label>
+                  )}
 
-              {mode === 'signup' && (
-                <label className="flex items-start gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={marketingConsent}
-                    onChange={(e) => setMarketingConsent(e.target.checked)}
+                  {error && <p className="text-sm text-red-500">{error}</p>}
+
+                  <button
+                    type="submit"
                     disabled={busy}
-                    className="mt-0.5 accent-[#F27D26]"
-                  />
-                  <span className="text-xs text-[#888] leading-snug">
-                    Email me with new poems, updates, and blog posts.
-                  </span>
-                </label>
-              )}
-
-              {error && <p className="text-sm text-red-500">{error}</p>}
-
-              <button
-                type="submit"
-                disabled={busy}
-                className="w-full py-3 rounded-xl bg-[#111] text-white text-sm font-medium hover:bg-[#222] transition-colors disabled:opacity-50"
-              >
-                {loading
-                  ? mode === 'signup' ? 'Creating account…' : 'Signing in…'
-                  : mode === 'signup' ? 'Create Account' : 'Sign In'}
-              </button>
-            </form>
-
-            <p className="text-xs text-[#aaa] text-center">
-              {mode === 'signup' ? (
-                <>
-                  Already have an account?{' '}
-                  <button
-                    type="button"
-                    onClick={() => { setMode('signin'); setError('') }}
-                    className="text-[#111] hover:underline"
+                    className="w-full py-3 rounded-xl bg-[#111] text-white text-sm font-medium hover:bg-[#222] transition-colors disabled:opacity-50"
                   >
-                    Sign in
+                    {loading
+                      ? mode === 'signup' ? 'Creating account…' : 'Signing in…'
+                      : mode === 'signup' ? 'Create Account' : 'Sign In'}
                   </button>
-                </>
-              ) : (
-                <>
-                  New here?{' '}
-                  <button
-                    type="button"
-                    onClick={() => { setMode('signup'); setError('') }}
-                    className="text-[#111] hover:underline"
-                  >
-                    Create an account
-                  </button>
-                </>
-              )}
-            </p>
+                </form>
+              </>
+            )}
           </div>
         </div>
       </div>
