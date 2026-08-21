@@ -9,6 +9,16 @@ import { r2Client, R2_BUCKET } from "@/lib/r2"
 const PREVIEW_DURATION_S = 180
 const PREVIEW_COOKIE_MAX_AGE_S = 60 * 60 * 24 // 24h — how long before an anonymous visitor gets another free preview
 
+// The reader fires off dozens to hundreds of sub-resource requests (every
+// page image, JS/CSS chunk) for a single "Open Book" click. Re-querying the
+// book's metadata and the viewer's purchase status on every one of those was
+// the dominant cost. Both are cheap to cache in-memory for the life of this
+// warm serverless instance — book metadata never changes without a deploy,
+// and purchase status changes rarely enough that a short TTL is safe.
+const BOOK_CACHE = new Map<string, { id: string; r2_prefix: string } | null>()
+const PURCHASE_CACHE_TTL_MS = 60_000
+const purchaseCache = new Map<string, { purchased: boolean; expiresAt: number }>()
+
 function cookieSecret(): string {
   const secret = process.env.PREVIEW_COOKIE_SECRET
   if (!secret) throw new Error("Missing env var: PREVIEW_COOKIE_SECRET")
@@ -47,6 +57,8 @@ function errorResponse(error: string, status: number): NextResponse {
 }
 
 async function resolveBook(bookSlug: string) {
+  if (BOOK_CACHE.has(bookSlug)) return BOOK_CACHE.get(bookSlug) ?? undefined
+
   const rows = await sql`
     SELECT p.id, p.r2_prefix
     FROM products p
@@ -57,11 +69,19 @@ async function resolveBook(bookSlug: string) {
     ORDER BY p.order_index
     LIMIT 1
   `
-  return rows[0] as { id: string; r2_prefix: string | null } | undefined
+  const row = rows[0] as { id: string; r2_prefix: string | null } | undefined
+  const resolved = row?.r2_prefix ? { id: row.id, r2_prefix: row.r2_prefix } : null
+  BOOK_CACHE.set(bookSlug, resolved)
+  return resolved ?? undefined
 }
 
 async function hasPurchased(authUserId: string | undefined, bookId: string): Promise<boolean> {
   if (!authUserId) return false
+
+  const cacheKey = `${authUserId}:${bookId}`
+  const cached = purchaseCache.get(cacheKey)
+  if (cached && cached.expiresAt > Date.now()) return cached.purchased
+
   const rows = await sql`
     SELECT 1 FROM purchases pu
     WHERE pu.product_id = ${bookId}
@@ -70,7 +90,9 @@ async function hasPurchased(authUserId: string | undefined, bookId: string): Pro
       AND pu.access_granted = true
     LIMIT 1
   `
-  return rows.length > 0
+  const purchased = rows.length > 0
+  purchaseCache.set(cacheKey, { purchased, expiresAt: Date.now() + PURCHASE_CACHE_TTL_MS })
+  return purchased
 }
 
 export async function GET(
@@ -83,8 +105,13 @@ export async function GET(
     return errorResponse("Invalid path", 400)
   }
 
-  const book = await resolveBook(bookSlug)
-  if (!book || !book.r2_prefix) {
+  // Book metadata and the session are independent lookups — run them
+  // concurrently instead of paying for both round-trips in sequence.
+  const [book, session] = await Promise.all([
+    resolveBook(bookSlug),
+    auth.api.getSession({ headers: await headers() }),
+  ])
+  if (!book) {
     return errorResponse("Not found", 404)
   }
 
@@ -98,7 +125,6 @@ export async function GET(
     return NextResponse.redirect(new URL("/flipbook", request.url))
   }
 
-  const session = await auth.api.getSession({ headers: await headers() })
   const purchased = await hasPurchased(session?.user?.id, book.id)
 
   const cookieName = `ib_preview_${bookSlug}`
@@ -133,17 +159,27 @@ export async function GET(
     throw err
   }
 
-  const bytes = await object.Body?.transformToByteArray()
-  if (!bytes) {
+  if (!object.Body) {
     return errorResponse("Not found", 404)
   }
 
-  const response = new NextResponse(Buffer.from(bytes), {
+  // Purchased viewers get a much longer cache on the static sub-assets
+  // (images/JS/CSS never change per book) so reopening the flipbook hits
+  // the browser cache instead of re-running the whole chain per file. The
+  // entry HTML and anything served to a time-limited preview stay
+  // uncached/short-lived so access can't outlive its window.
+  const cacheControl = !purchased
+    ? "private, no-store"
+    : isEntryPoint
+      ? "private, max-age=300"
+      : "private, max-age=604800, immutable"
+
+  const response = new NextResponse(object.Body.transformToWebStream(), {
     status: 200,
     headers: {
       "Content-Type": object.ContentType ?? "application/octet-stream",
       // Gated content: never let a shared/edge cache serve one visitor's response to another.
-      "Cache-Control": purchased ? "private, max-age=300" : "private, no-store",
+      "Cache-Control": cacheControl,
     },
   })
 
