@@ -100,6 +100,11 @@ export default function SignInOverlay({ onClose }: SignInOverlayProps) {
                   disabled={busy}
                   className="w-full bg-transparent border-b border-[#d4d4d4] py-2 text-[#111] text-sm outline-none focus:border-[#F27D26] transition-colors"
                 />
+                <div className="text-right">
+                  <a href="/forgot-password" className="text-xs text-[#aaa] hover:text-[#111] transition-colors">
+                    Forgot password?
+                  </a>
+                </div>
               </div>
 
               {error && <p className="text-sm text-red-500">{error}</p>}
