@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Loader2 } from "lucide-react"
+import { CornerDownRight, Eye, EyeOff, Loader2 } from "lucide-react"
 import { authClient } from "@/lib/auth-client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -12,12 +12,13 @@ import { Checkbox } from "@/components/ui/checkbox"
 
 export default function LoginPage() {
   const router = useRouter()
-  const [mode, setMode] = useState<"signin" | "signup" | null>(null)
+  const [mode, setMode] = useState<"signin" | "signup">("signin")
 
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
   const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
   const [marketingConsent, setMarketingConsent] = useState(false)
 
   const [error, setError] = useState("")
@@ -89,159 +90,179 @@ export default function LoginPage() {
       <div className="w-full max-w-sm space-y-8">
 
         {/* Wordmark */}
-        <div className="text-center space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight">Infinite Bloom</h1>
-          <p className="text-sm text-muted-foreground">Access your copy</p>
-        </div>
-
-        {/* Pill toggle */}
-        <div className="flex justify-center">
-          <div className="inline-flex rounded-full border border-border p-1">
-            <button
-              type="button"
-              onClick={() => selectMode("signup")}
-              className={`px-5 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                mode === "signup" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Create Account
-            </button>
-            <button
-              type="button"
-              onClick={() => selectMode("signin")}
-              className={`px-5 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                mode === "signin" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Log In
-            </button>
+        <div className="text-center space-y-3">
+          <img
+            src="https://res.cloudinary.com/dsoojlgg1/image/upload/v1779143359/infinite_bloom_logo_ncxs5k.png"
+            alt="Infinite Bloom"
+            className="h-28 w-auto mx-auto"
+          />
+          <div className="space-y-1">
+            <h1 className="text-2xl font-semibold tracking-tight">Kismet Krystle</h1>
+            <p className="text-sm text-muted-foreground">The Infinite Bloom: Evolving by perspective</p>
           </div>
         </div>
 
-        {mode && (
-          <>
-            {/* Google */}
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={handleGoogleLogin}
-              disabled={busy}
-            >
-              {googleLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <GoogleIcon />
-              )}
-              {googleLoading ? "Connecting…" : "Continue with Google"}
-            </Button>
+        {/* Google */}
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full"
+          onClick={handleGoogleLogin}
+          disabled={busy}
+        >
+          {googleLoading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <GoogleIcon />
+          )}
+          {googleLoading ? "Connecting…" : "Continue with Google"}
+        </Button>
 
-            {/* Divider */}
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="bg-background px-3 text-muted-foreground">or</span>
-              </div>
-            </div>
+        {/* Divider */}
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-border" />
+          </div>
+          <div className="relative flex justify-center text-xs">
+            <span className="bg-background px-3 text-muted-foreground">or</span>
+          </div>
+        </div>
 
-            {/* Email / password */}
-            <form onSubmit={mode === "signup" ? handleSignUp : handleSignIn} className="space-y-4">
-              {mode === "signup" && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Name</Label>
-                    <Input
-                      id="name"
-                      autoComplete="name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      required
-                      disabled={busy}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      autoComplete="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      disabled={busy}
-                    />
-                  </div>
-                </div>
-              )}
-
+        {/* Email / password — Enter submits natively; the arrow button below is the visible trigger */}
+        <form onSubmit={mode === "signup" ? handleSignUp : handleSignIn} className="space-y-4">
+          {mode === "signup" && (
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="name">Name</Label>
                 <Input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="name"
+                  autoComplete="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   required
                   disabled={busy}
                 />
               </div>
-
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Password</Label>
-                  {mode === "signin" && (
-                    <Link
-                      href="/forgot-password"
-                      className="text-xs text-muted-foreground underline hover:text-foreground transition-colors"
-                    >
-                      Forgot password?
-                    </Link>
-                  )}
-                </div>
+                <Label htmlFor="phone">Phone</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  autoComplete="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  disabled={busy}
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              autoComplete="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              disabled={busy}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Password</Label>
+              {mode === "signin" && (
+                <Link
+                  href="/forgot-password"
+                  className="text-xs text-muted-foreground underline hover:text-foreground transition-colors"
+                >
+                  Forgot password?
+                </Link>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
                 <Input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   autoComplete={mode === "signup" ? "new-password" : "current-password"}
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={busy}
+                  className="pr-10"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  disabled={busy}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
+              <button
+                type="submit"
+                disabled={busy}
+                aria-label={mode === "signup" ? "Create account" : "Sign in"}
+                className="shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-foreground text-background hover:opacity-90 transition-opacity disabled:opacity-50"
+              >
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CornerDownRight className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
 
-              {mode === "signup" && (
-                <div className="flex items-start gap-2">
-                  <Checkbox
-                    id="marketingConsent"
-                    checked={marketingConsent}
-                    onCheckedChange={(checked) => setMarketingConsent(checked === true)}
-                    disabled={busy}
-                  />
-                  <Label htmlFor="marketingConsent" className="text-xs font-normal text-muted-foreground leading-snug">
-                    Email me with new poems, updates, and blog posts.
-                  </Label>
-                </div>
-              )}
+          {mode === "signup" && (
+            <div className="flex items-start gap-2">
+              <Checkbox
+                id="marketingConsent"
+                checked={marketingConsent}
+                onCheckedChange={(checked) => setMarketingConsent(checked === true)}
+                disabled={busy}
+              />
+              <Label htmlFor="marketingConsent" className="text-xs font-normal text-muted-foreground leading-snug">
+                Email me with new poems, updates, and blog posts.
+              </Label>
+            </div>
+          )}
 
-              {error && (
-                <p className="text-sm text-destructive" role="alert">
-                  {error}
-                </p>
-              )}
+          {error && (
+            <p className="text-sm text-destructive" role="alert">
+              {error}
+            </p>
+          )}
+        </form>
 
-              <Button type="submit" className="w-full" disabled={busy}>
-                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                {loading
-                  ? mode === "signup" ? "Creating account…" : "Signing in…"
-                  : mode === "signup" ? "Create Account" : "Sign In"}
-              </Button>
-            </form>
-          </>
-        )}
+        {/* Pill toggle */}
+        <div className="flex flex-col gap-2">
+          <button
+            type="button"
+            onClick={() => selectMode("signup")}
+            className={`w-full py-2.5 rounded-full text-sm font-medium border transition-colors ${
+              mode === "signup"
+                ? "bg-foreground text-background border-foreground"
+                : "border-border text-muted-foreground hover:text-foreground hover:border-foreground"
+            }`}
+          >
+            Create Account
+          </button>
+          <button
+            type="button"
+            onClick={() => selectMode("signin")}
+            className={`w-full py-2.5 rounded-full text-sm font-medium border transition-colors ${
+              mode === "signin"
+                ? "bg-foreground text-background border-foreground"
+                : "border-border text-muted-foreground hover:text-foreground hover:border-foreground"
+            }`}
+          >
+            Log In
+          </button>
+        </div>
 
       </div>
     </main>
