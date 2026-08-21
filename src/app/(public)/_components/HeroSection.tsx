@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { ChevronDown } from 'lucide-react'
+import RandomInsightCard from './RandomInsightCard'
 
 // 9 rows, opacity peaking at the true center (row 5), fading symmetrically
 // outward. Directions alternate, anchored so the center row scrolls left.
@@ -87,6 +89,20 @@ export default function HeroSection() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Random insight, centered over the banner */}
+      <RandomInsightCard />
+
+      {/* Scroll-down hint */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 animate-bounce">
+        <span
+          className="text-xs uppercase tracking-widest text-white/80"
+          style={{ fontFamily: 'Inter, sans-serif' }}
+        >
+          Scroll
+        </span>
+        <ChevronDown className="w-6 h-6 text-white/80" />
       </div>
     </section>
   )

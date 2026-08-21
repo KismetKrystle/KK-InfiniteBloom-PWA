@@ -78,6 +78,7 @@
             "lint": "next lint",
             "dev:vite": "vite",
             "build:vite": "vite build",
-            "upload-book": "tsx scripts/upload-book-to-r2.ts"
+            "upload-book": "tsx scripts/upload-book-to-r2.ts",
+            "seed:insights": "tsx scripts/seed-insights.ts"
       }
 }

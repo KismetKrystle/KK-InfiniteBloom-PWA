@@ -105,7 +105,7 @@ export default function SharedNavbar({ user, dark = false, transparent = false }
           dark ? 'bg-black/60 backdrop-blur-sm' : transparent ? 'bg-transparent' : 'bg-white',
         ].join(' ')}
       >
-        <a href="/" className="flex items-center h-full">
+        <a href="/?section=bento" className="flex items-center h-full">
           <img
             src="https://res.cloudinary.com/dsoojlgg1/image/upload/v1779143359/infinite_bloom_logo_ncxs5k.png"
             alt="Infinite Bloom"

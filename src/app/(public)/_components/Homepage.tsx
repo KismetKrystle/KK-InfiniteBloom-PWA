@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import Navbar from './Navbar'
 import BentoGrid from './BentoGrid'
 import HeroSection from './HeroSection'
@@ -22,6 +22,15 @@ export default function Homepage({ user, hasPurchase }: HomepageProps) {
   const headingPulseRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const resetRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isFirstRender = useRef(true)
+
+  // Arriving from another page via the navbar logo (?section=bento) should
+  // land past the hero, on the bento grid, instead of at the top.
+  useLayoutEffect(() => {
+    if (new URLSearchParams(window.location.search).get('section') === 'bento') {
+      window.scrollTo(0, 520)
+      window.history.replaceState(null, '', window.location.pathname)
+    }
+  }, [])
 
   useEffect(() => {
     if (isFirstRender.current) { isFirstRender.current = false; return }
@@ -48,12 +57,12 @@ export default function Homepage({ user, hasPurchase }: HomepageProps) {
       <HeroSection />
 
       <div className="sticky top-0">
-        <main className="min-h-screen md:h-screen md:overflow-hidden bg-[#f5f5f5] flex flex-col">
+        <main className="h-screen overflow-hidden bg-[#f5f5f5] flex flex-col">
           <Navbar user={user} />
 
           <div className="h-16 flex-shrink-0" />
 
-          <div className="flex-1 md:min-h-0 md:overflow-hidden px-4">
+          <div className="flex-1 min-h-0 overflow-hidden px-4">
             <BentoGrid
               user={user}
               hasPurchase={hasPurchase}

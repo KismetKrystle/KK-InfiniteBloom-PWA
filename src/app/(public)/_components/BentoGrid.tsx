@@ -27,7 +27,6 @@ function BentoCard({
   className = '',
   onClick,
   accent = false,
-  short = false,
   hoverLabel,
   onHover,
   onHoveredChange,
@@ -36,7 +35,6 @@ function BentoCard({
   className?: string
   onClick?: () => void
   accent?: boolean
-  short?: boolean
   hoverLabel?: string
   onHover?: (label: string | null) => void
   onHoveredChange?: (hovered: boolean) => void
@@ -83,7 +81,7 @@ function BentoCard({
         transition: 'box-shadow 200ms ease-out, transform 200ms ease-out, background 150ms ease',
       }}
       className={[
-        `relative rounded-[29px] md:rounded-[32px] border flex flex-col overflow-hidden ${short ? 'min-h-[80px]' : 'min-h-[160px]'} md:min-h-0`,
+        'relative rounded-[29px] md:rounded-[32px] border flex flex-col overflow-hidden min-h-0',
         'cursor-pointer select-none group',
         accent ? 'border-[#F27D26]' : 'border-[#d4d4d4]',
         className,
@@ -161,8 +159,9 @@ export default function BentoGrid({ user, hasPurchase, onHover, headingText, hea
   const [accessHovered, setAccessHovered] = useState(false)
   const [audioHovered, setAudioHovered] = useState(false)
   const [eventsHovered, setEventsHovered] = useState(false)
-  const [getBookHovered, setGetBookHovered] = useState(false)
+  const [blogHovered, setBlogHovered] = useState(false)
   const [contactHovered, setContactHovered] = useState(false)
+  const [getBookHovered, setGetBookHovered] = useState(false)
 
   const anyOverlayOpen = contactOpen || pricingOpen || aboutOpen
 
@@ -186,11 +185,11 @@ export default function BentoGrid({ user, hasPurchase, onHover, headingText, hea
     <>
       <div
         style={{ opacity: anyOverlayOpen ? 0.3 : 1, transition: 'opacity 220ms ease-out' }}
-        className="flex flex-col md:h-full"
+        className="flex flex-col h-full"
       >
 
         {/* Top grid: About + Access */}
-        <div className="grid grid-cols-2 md:grid-cols-4 md:grid-rows-1 gap-[10px] flex-1 md:min-h-0">
+        <div className="grid grid-cols-2 md:grid-cols-4 md:grid-rows-1 gap-[10px] flex-1 min-h-0">
 
           {/* About */}
           <BentoCard
@@ -205,7 +204,7 @@ export default function BentoGrid({ user, hasPurchase, onHover, headingText, hea
               alt="Kismet Krystle"
               className="absolute top-9 right-4 w-20 h-20 md:w-36 md:h-36 rounded-full object-cover object-top"
             />
-            <CardLabel label="About" sub="Poet · Author · Speaker" animated isHovered={aboutHovered} />
+            <CardLabel label="About" sub="Poet · Author · Speaker · Entrepeneur" animated isHovered={aboutHovered} />
           </BentoCard>
 
           {/* Access */}
@@ -241,8 +240,8 @@ export default function BentoGrid({ user, hasPurchase, onHover, headingText, hea
           </h1>
         </div>
 
-        {/* Bottom grid: Audio + Events + Get Book + Contact */}
-        <div className="grid grid-cols-2 md:grid-cols-4 md:grid-rows-2 gap-[10px] flex-1 md:min-h-0">
+        {/* Bottom grid: Audio + Events + Blog + Contact */}
+        <div className="grid grid-cols-2 md:grid-cols-4 md:grid-rows-2 gap-[10px] flex-1 min-h-0">
 
           {/* Audio */}
           <BentoCard
@@ -294,25 +293,22 @@ export default function BentoGrid({ user, hasPurchase, onHover, headingText, hea
             <CardLabel light label="Events" animated isHovered={eventsHovered} />
           </BentoCard>
 
-          {/* Get Book */}
+          {/* Blog */}
           <BentoCard
-            accent
-            short
             className="col-span-1 md:col-span-1"
-            onClick={() => setPricingOpen(true)}
-            hoverLabel="Get Book"
+            onClick={() => router.push('/blog')}
+            hoverLabel="Blog"
             onHover={onHover}
-            onHoveredChange={setGetBookHovered}
+            onHoveredChange={setBlogHovered}
           >
-            <CardLabel accent label="Get Book" animated isHovered={getBookHovered} />
+            <CardLabel label="Blog" animated isHovered={blogHovered} />
           </BentoCard>
 
           {/* Contact */}
           <BentoCard
-            short
             className="col-span-1 md:col-span-1"
             onClick={() => setContactOpen(true)}
-            hoverLabel="Contact & Follow"
+            hoverLabel="Contact"
             onHover={onHover}
             onHoveredChange={setContactHovered}
           >
@@ -320,6 +316,30 @@ export default function BentoGrid({ user, hasPurchase, onHover, headingText, hea
           </BentoCard>
 
         </div>
+
+        {/* Get Book — full-width bar */}
+        <BentoCard
+          accent
+          className="flex-shrink-0 mt-[10px]"
+          onClick={() => setPricingOpen(true)}
+          hoverLabel="Buy Book"
+          onHover={onHover}
+          onHoveredChange={setGetBookHovered}
+        >
+          <div className="flex-1 flex items-center justify-center py-4 px-5">
+            <p
+              className="text-center"
+              style={{
+                fontFamily: 'Inter, sans-serif',
+                fontSize: 'clamp(22px, 3.2vw, 35px)',
+                fontWeight: 700,
+                color: 'white',
+              }}
+            >
+              <AnimatedCardTitle isHovered={getBookHovered}>Buy Book</AnimatedCardTitle>
+            </p>
+          </div>
+        </BentoCard>
 
       </div>
 
