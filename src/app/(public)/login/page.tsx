@@ -8,18 +8,25 @@ import { authClient } from "@/lib/auth-client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
 
 export default function LoginPage() {
   const router = useRouter()
+  const [mode, setMode] = useState<"signin" | "signup">("signin")
+
+  const [name, setName] = useState("")
   const [email, setEmail] = useState("")
+  const [phone, setPhone] = useState("")
   const [password, setPassword] = useState("")
+  const [marketingConsent, setMarketingConsent] = useState(false)
+
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
 
   const busy = loading || googleLoading
 
-  async function handleEmailLogin(e: React.FormEvent) {
+  async function handleSignIn(e: React.FormEvent) {
     e.preventDefault()
     setError("")
     setLoading(true)
@@ -31,6 +38,27 @@ export default function LoginPage() {
       setLoading(false)
       return
     }
+
+    router.push("/post-login")
+  }
+
+  async function handleSignUp(e: React.FormEvent) {
+    e.preventDefault()
+    setError("")
+    setLoading(true)
+
+    const { error } = await authClient.signUp.email({ email, password, name })
+    if (error) {
+      setError(error.message ?? "Could not create your account.")
+      setLoading(false)
+      return
+    }
+
+    await fetch("/api/user/profile", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone, marketingConsent }),
+    }).catch(() => {})
 
     router.push("/post-login")
   }
@@ -58,7 +86,9 @@ export default function LoginPage() {
         {/* Wordmark */}
         <div className="text-center space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight">Infinite Bloom</h1>
-          <p className="text-sm text-muted-foreground">Sign in to access your copy</p>
+          <p className="text-sm text-muted-foreground">
+            {mode === "signup" ? "Create an account to access your copy" : "Sign in to access your copy"}
+          </p>
         </div>
 
         {/* Google */}
@@ -88,7 +118,34 @@ export default function LoginPage() {
         </div>
 
         {/* Email / password */}
-        <form onSubmit={handleEmailLogin} className="space-y-4">
+        <form onSubmit={mode === "signup" ? handleSignUp : handleSignIn} className="space-y-4">
+          {mode === "signup" && (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Name</Label>
+                <Input
+                  id="name"
+                  autoComplete="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  disabled={busy}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  autoComplete="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  disabled={busy}
+                />
+              </div>
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -106,17 +163,19 @@ export default function LoginPage() {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="password">Password</Label>
-              <Link
-                href="/forgot-password"
-                className="text-xs text-muted-foreground underline hover:text-foreground transition-colors"
-              >
-                Forgot password?
-              </Link>
+              {mode === "signin" && (
+                <Link
+                  href="/forgot-password"
+                  className="text-xs text-muted-foreground underline hover:text-foreground transition-colors"
+                >
+                  Forgot password?
+                </Link>
+              )}
             </div>
             <Input
               id="password"
               type="password"
-              autoComplete="current-password"
+              autoComplete={mode === "signup" ? "new-password" : "current-password"}
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -124,6 +183,20 @@ export default function LoginPage() {
               disabled={busy}
             />
           </div>
+
+          {mode === "signup" && (
+            <div className="flex items-start gap-2">
+              <Checkbox
+                id="marketingConsent"
+                checked={marketingConsent}
+                onCheckedChange={(checked) => setMarketingConsent(checked === true)}
+                disabled={busy}
+              />
+              <Label htmlFor="marketingConsent" className="text-xs font-normal text-muted-foreground leading-snug">
+                Email me with new poems, updates, and blog posts.
+              </Label>
+            </div>
+          )}
 
           {error && (
             <p className="text-sm text-destructive" role="alert">
@@ -133,9 +206,37 @@ export default function LoginPage() {
 
           <Button type="submit" className="w-full" disabled={busy}>
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-            {loading ? "Signing in…" : "Sign In"}
+            {loading
+              ? mode === "signup" ? "Creating account…" : "Signing in…"
+              : mode === "signup" ? "Create Account" : "Sign In"}
           </Button>
         </form>
+
+        <p className="text-sm text-center text-muted-foreground">
+          {mode === "signup" ? (
+            <>
+              Already have an account?{" "}
+              <button
+                type="button"
+                onClick={() => { setMode("signin"); setError("") }}
+                className="text-foreground underline hover:no-underline"
+              >
+                Sign in
+              </button>
+            </>
+          ) : (
+            <>
+              New here?{" "}
+              <button
+                type="button"
+                onClick={() => { setMode("signup"); setError("") }}
+                className="text-foreground underline hover:no-underline"
+              >
+                Create an account
+              </button>
+            </>
+          )}
+        </p>
 
       </div>
     </main>

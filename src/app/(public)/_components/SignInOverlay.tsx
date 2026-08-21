@@ -12,15 +12,21 @@ interface SignInOverlayProps {
 
 export default function SignInOverlay({ onClose }: SignInOverlayProps) {
   const router = useRouter()
+  const [mode, setMode] = useState<'signin' | 'signup'>('signin')
+
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
+  const [marketingConsent, setMarketingConsent] = useState(false)
+
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
 
   const busy = loading || googleLoading
 
-  async function handleEmailLogin(e: React.FormEvent) {
+  async function handleSignIn(e: React.FormEvent) {
     e.preventDefault()
     setError('')
     setLoading(true)
@@ -30,6 +36,27 @@ export default function SignInOverlay({ onClose }: SignInOverlayProps) {
       setLoading(false)
       return
     }
+    router.push('/post-login')
+  }
+
+  async function handleSignUp(e: React.FormEvent) {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+
+    const { error } = await authClient.signUp.email({ email, password, name })
+    if (error) {
+      setError(error.message ?? 'Could not create your account.')
+      setLoading(false)
+      return
+    }
+
+    await fetch('/api/user/profile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, marketingConsent }),
+    }).catch(() => {})
+
     router.push('/post-login')
   }
 
@@ -53,9 +80,11 @@ export default function SignInOverlay({ onClose }: SignInOverlayProps) {
       <div className="flex flex-col md:flex-row min-h-screen">
         {/* Left */}
         <div className="flex-1 flex flex-col justify-center px-8 md:px-16 py-20 border-b md:border-b-0 md:border-r border-[#d4d4d4]">
-          <p className="text-xs uppercase tracking-widest text-[#aaa] mb-4">Welcome back</p>
+          <p className="text-xs uppercase tracking-widest text-[#aaa] mb-4">
+            {mode === 'signup' ? 'New here' : 'Welcome back'}
+          </p>
           <h2 className="text-3xl md:text-4xl font-light text-[#111] leading-snug">
-            Sign in to<br />Infinite Bloom
+            {mode === 'signup' ? <>Create your<br />account</> : <>Sign in to<br />Infinite Bloom</>}
           </h2>
         </div>
 
@@ -78,7 +107,32 @@ export default function SignInOverlay({ onClose }: SignInOverlayProps) {
               <div className="flex-1 h-px bg-[#d4d4d4]" />
             </div>
 
-            <form onSubmit={handleEmailLogin} className="space-y-5">
+            <form onSubmit={mode === 'signup' ? handleSignUp : handleSignIn} className="space-y-5">
+              {mode === 'signup' && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs text-[#aaa] uppercase tracking-widest">Name</label>
+                    <input
+                      required
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      disabled={busy}
+                      className="w-full bg-transparent border-b border-[#d4d4d4] py-2 text-[#111] text-sm outline-none focus:border-[#F27D26] transition-colors"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-[#aaa] uppercase tracking-widest">Phone</label>
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      disabled={busy}
+                      className="w-full bg-transparent border-b border-[#d4d4d4] py-2 text-[#111] text-sm outline-none focus:border-[#F27D26] transition-colors"
+                    />
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-1">
                 <label className="text-xs text-[#aaa] uppercase tracking-widest">Email</label>
                 <input
@@ -100,12 +154,29 @@ export default function SignInOverlay({ onClose }: SignInOverlayProps) {
                   disabled={busy}
                   className="w-full bg-transparent border-b border-[#d4d4d4] py-2 text-[#111] text-sm outline-none focus:border-[#F27D26] transition-colors"
                 />
-                <div className="text-right">
-                  <a href="/forgot-password" className="text-xs text-[#aaa] hover:text-[#111] transition-colors">
-                    Forgot password?
-                  </a>
-                </div>
+                {mode === 'signin' && (
+                  <div className="text-right">
+                    <a href="/forgot-password" className="text-xs text-[#aaa] hover:text-[#111] transition-colors">
+                      Forgot password?
+                    </a>
+                  </div>
+                )}
               </div>
+
+              {mode === 'signup' && (
+                <label className="flex items-start gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={marketingConsent}
+                    onChange={(e) => setMarketingConsent(e.target.checked)}
+                    disabled={busy}
+                    className="mt-0.5 accent-[#F27D26]"
+                  />
+                  <span className="text-xs text-[#888] leading-snug">
+                    Email me with new poems, updates, and blog posts.
+                  </span>
+                </label>
+              )}
 
               {error && <p className="text-sm text-red-500">{error}</p>}
 
@@ -114,9 +185,37 @@ export default function SignInOverlay({ onClose }: SignInOverlayProps) {
                 disabled={busy}
                 className="w-full py-3 rounded-xl bg-[#111] text-white text-sm font-medium hover:bg-[#222] transition-colors disabled:opacity-50"
               >
-                {loading ? 'Signing in…' : 'Sign In'}
+                {loading
+                  ? mode === 'signup' ? 'Creating account…' : 'Signing in…'
+                  : mode === 'signup' ? 'Create Account' : 'Sign In'}
               </button>
             </form>
+
+            <p className="text-xs text-[#aaa] text-center">
+              {mode === 'signup' ? (
+                <>
+                  Already have an account?{' '}
+                  <button
+                    type="button"
+                    onClick={() => { setMode('signin'); setError('') }}
+                    className="text-[#111] hover:underline"
+                  >
+                    Sign in
+                  </button>
+                </>
+              ) : (
+                <>
+                  New here?{' '}
+                  <button
+                    type="button"
+                    onClick={() => { setMode('signup'); setError('') }}
+                    className="text-[#111] hover:underline"
+                  >
+                    Create an account
+                  </button>
+                </>
+              )}
+            </p>
           </div>
         </div>
       </div>
