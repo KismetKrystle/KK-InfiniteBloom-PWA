@@ -33,6 +33,7 @@ export default function FlipbookPage({ user, hasPurchased, bookSlug }: FlipbookP
   const [interactionCaptured, setInteractionCaptured] = useState(false)
   const [paywallActive, setPaywallActive] = useState(false)
   const [paywallDismissed, setPaywallDismissed] = useState(false)
+  const [previewExpired, setPreviewExpired] = useState(false)
 
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const graceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -71,6 +72,23 @@ export default function FlipbookPage({ user, hasPurchased, bookSlug }: FlipbookP
       navigator.serviceWorker.register('/flipbook-sw.js', { scope: '/flipbook-content/' }).catch(() => {})
     }
   }, [hasPurchased])
+
+  async function handleOpenBook() {
+    if (!hasPurchased) {
+      try {
+        const res = await fetch(`/api/flipbook/preview-status?bookSlug=${encodeURIComponent(bookSlug)}`)
+        const data = await res.json()
+        if (data.expired) {
+          setPreviewExpired(true)
+          setPaywallActive(true)
+        }
+      } catch {
+        // Status check failed — fall through and let the content route's own
+        // check be the source of truth instead of blocking the reader.
+      }
+    }
+    setShowFlipbook(true)
+  }
 
   function handleFirstInteraction() {
     console.log('[Paywall] First click detected — starting grace period', GRACE_PERIOD_MS, 'ms')
@@ -120,18 +138,20 @@ export default function FlipbookPage({ user, hasPurchased, bookSlug }: FlipbookP
             <div className={isFullScreen ? 'fixed inset-0 z-50 bg-black' : 'relative max-w-4xl mx-auto w-full h-80 md:h-[600px] bg-white rounded-lg overflow-hidden shadow-xl'}>
               {!isFullScreen && (
                 <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
-                  <button
-                    onClick={() => setIsFullScreen(true)}
-                    title="Full Screen"
-                    className="bg-black/40 hover:bg-black/60 backdrop-blur-sm text-white rounded-full p-2 transition-colors"
-                  >
-                    <Maximize className="w-5 h-5" />
-                  </button>
+                  {!previewExpired && (
+                    <button
+                      onClick={() => setIsFullScreen(true)}
+                      title="Full Screen"
+                      className="bg-black/40 hover:bg-black/60 backdrop-blur-sm text-white rounded-full p-2 transition-colors"
+                    >
+                      <Maximize className="w-5 h-5" />
+                    </button>
+                  )}
 
                   {/* Mobile-only icons — hidden on md+ where SharedNavbar is always visible */}
                   <div className="md:hidden flex items-center gap-2 bg-black/40 backdrop-blur-sm rounded-full px-2 py-2">
                     <button
-                      onClick={() => setShowFlipbook(false)}
+                      onClick={() => { setShowFlipbook(false); setPreviewExpired(false) }}
                       aria-label="Close flipbook"
                       className="flex items-center justify-center p-1 text-white/80 hover:text-white transition-opacity"
                     >
@@ -159,45 +179,15 @@ export default function FlipbookPage({ user, hasPurchased, bookSlug }: FlipbookP
                 </div>
               )}
 
-              <iframe
-                ref={iframeRef}
-                src={`/flipbook-content/${bookSlug}/index.html`}
-                className="w-full h-full border-0"
-                title="Infinite Bloom Flipbook"
-                allowFullScreen
-                onLoad={() => {
-                  // Served same-origin through our own proxy route, so we can
-                  // reach in and override the reader's default gray backdrop.
-                  try {
-                    const doc = iframeRef.current?.contentDocument
-                    if (!doc) return
-                    doc.documentElement.style.background = '#ffffff'
-                    doc.body.style.background = '#ffffff'
-                    const style = doc.createElement('style')
-                    style.textContent = 'html, body { background: #ffffff !important; }'
-                    doc.head.appendChild(style)
-                  } catch {
-                    // Not reachable for some reason — leave the reader's own background as-is.
-                  }
-                }}
-              />
-
-              {/* Transparent first-interaction capture overlay — sits above iframe, below controls */}
-              {!hasPurchased && !interactionCaptured && (
-                <div
-                  className="absolute inset-0 z-[5] cursor-pointer"
-                  onClick={handleFirstInteraction}
-                  aria-hidden="true"
-                />
-              )}
-
-              {/* Paywall overlay */}
-              {!hasPurchased && paywallActive && (
-                <div className="absolute inset-0 z-20 flex items-center justify-center backdrop-blur-sm bg-white/80">
-                  <div className="relative bg-white rounded-2xl shadow-2xl px-8 py-10 max-w-sm mx-4 text-center">
+              {previewExpired ? (
+                /* Already know the preview's used up before ever requesting the
+                   reader — show the CTA directly instead of loading an iframe
+                   that would just come back with a raw "Preview expired" error. */
+                <div className="w-full h-full flex items-center justify-center bg-white">
+                  <div className="relative bg-white rounded-2xl px-8 py-10 max-w-sm mx-4 text-center">
                     <button
-                      onClick={handleDismissPaywall}
-                      aria-label="Dismiss"
+                      onClick={() => { setShowFlipbook(false); setPreviewExpired(false) }}
+                      aria-label="Close"
                       className="absolute top-3 right-3 text-[#aaa] hover:text-[#333] transition-colors"
                     >
                       <X className="w-5 h-5" />
@@ -220,23 +210,88 @@ export default function FlipbookPage({ user, hasPurchased, bookSlug }: FlipbookP
                     )}
                   </div>
                 </div>
-              )}
+              ) : (
+                <>
+                  <iframe
+                    ref={iframeRef}
+                    src={`/flipbook-content/${bookSlug}/index.html`}
+                    className="w-full h-full border-0"
+                    title="Infinite Bloom Flipbook"
+                    allowFullScreen
+                    onLoad={() => {
+                      // Served same-origin through our own proxy route, so we can
+                      // reach in and override the reader's default gray backdrop.
+                      try {
+                        const doc = iframeRef.current?.contentDocument
+                        if (!doc) return
+                        doc.documentElement.style.background = '#ffffff'
+                        doc.body.style.background = '#ffffff'
+                        const style = doc.createElement('style')
+                        style.textContent = 'html, body { background: #ffffff !important; }'
+                        doc.head.appendChild(style)
+                      } catch {
+                        // Not reachable for some reason — leave the reader's own background as-is.
+                      }
+                    }}
+                  />
 
-              {/* Persistent floating button after paywall dismissed */}
-              {!hasPurchased && paywallDismissed && (
-                <a
-                  href={user ? '/' : '/?pricing=open'}
-                  className="absolute bottom-14 left-4 z-10 px-4 py-2 rounded-xl text-white text-sm font-medium shadow-lg transition-opacity hover:opacity-90"
-                  style={{ backgroundColor: '#F27D26' }}
-                >
-                  Get Your Copy
-                </a>
+                  {/* Transparent first-interaction capture overlay — sits above iframe, below controls */}
+                  {!hasPurchased && !interactionCaptured && (
+                    <div
+                      className="absolute inset-0 z-[5] cursor-pointer"
+                      onClick={handleFirstInteraction}
+                      aria-hidden="true"
+                    />
+                  )}
+
+                  {/* Paywall overlay — this session's countdown ran out while reading */}
+                  {!hasPurchased && paywallActive && (
+                    <div className="absolute inset-0 z-20 flex items-center justify-center backdrop-blur-sm bg-white/80">
+                      <div className="relative bg-white rounded-2xl shadow-2xl px-8 py-10 max-w-sm mx-4 text-center">
+                        <button
+                          onClick={handleDismissPaywall}
+                          aria-label="Dismiss"
+                          className="absolute top-3 right-3 text-[#aaa] hover:text-[#333] transition-colors"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                        <p className="text-xs uppercase tracking-widest text-[#aaa] mb-3">Free Preview Ended</p>
+                        <h3 className="text-xl font-semibold text-[#111] mb-2">Enjoyed what you read?</h3>
+                        <p className="text-sm text-[#666] mb-6">Get the full Infinite Bloom experience — every poem, every page.</p>
+                        <a
+                          href={user ? '/' : '/?pricing=open'}
+                          className="block w-full py-3 rounded-xl text-white font-medium text-sm transition-opacity hover:opacity-90"
+                          style={{ backgroundColor: '#F27D26' }}
+                        >
+                          Get Your Copy
+                        </a>
+                        {!user && (
+                          <p className="mt-4 text-xs text-[#aaa]">
+                            Already have access?{' '}
+                            <a href="/login" className="text-[#F27D26] hover:underline">Sign in</a>
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Persistent floating button after paywall dismissed */}
+                  {!hasPurchased && paywallDismissed && (
+                    <a
+                      href={user ? '/' : '/?pricing=open'}
+                      className="absolute bottom-14 left-4 z-10 px-4 py-2 rounded-xl text-white text-sm font-medium shadow-lg transition-opacity hover:opacity-90"
+                      style={{ backgroundColor: '#F27D26' }}
+                    >
+                      Get Your Copy
+                    </a>
+                  )}
+                </>
               )}
             </div>
           ) : (
             <div
               className="relative max-w-4xl mx-auto group cursor-pointer transition-transform duration-300 hover:-translate-y-2"
-              onClick={() => setShowFlipbook(true)}
+              onClick={handleOpenBook}
             >
               <ImageWithFallback
                 src="/flipbook-cover.png"
