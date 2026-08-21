@@ -159,7 +159,8 @@ export async function GET(
     throw err
   }
 
-  if (!object.Body) {
+  const bytes = await object.Body?.transformToByteArray()
+  if (!bytes) {
     return errorResponse("Not found", 404)
   }
 
@@ -174,7 +175,7 @@ export async function GET(
       ? "private, max-age=300"
       : "private, max-age=604800, immutable"
 
-  const response = new NextResponse(object.Body.transformToWebStream(), {
+  const response = new NextResponse(Buffer.from(bytes), {
     status: 200,
     headers: {
       "Content-Type": object.ContentType ?? "application/octet-stream",
