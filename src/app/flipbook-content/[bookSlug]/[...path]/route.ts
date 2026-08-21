@@ -6,6 +6,8 @@ import { r2Client, R2_BUCKET } from "@/lib/r2"
 import {
   PREVIEW_DURATION_S,
   PREVIEW_COOKIE_MAX_AGE_S,
+  PREVIEW_COOKIE_PERMANENT_S,
+  previewCookieName,
   resolveBook,
   hasPurchased,
   verifyPreviewCookie,
@@ -47,8 +49,8 @@ export async function GET(
   }
 
   const purchased = await hasPurchased(session?.user?.id, book.id)
-
-  const cookieName = `ib_preview_${bookSlug}`
+  const signedIn = Boolean(session?.user?.id)
+  const cookieName = previewCookieName(bookSlug, signedIn)
   let cookieToSet: string | null = null
 
   if (!purchased) {
@@ -111,7 +113,7 @@ export async function GET(
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/flipbook-content",
-      maxAge: PREVIEW_COOKIE_MAX_AGE_S,
+      maxAge: signedIn ? PREVIEW_COOKIE_MAX_AGE_S : PREVIEW_COOKIE_PERMANENT_S,
     })
   }
 

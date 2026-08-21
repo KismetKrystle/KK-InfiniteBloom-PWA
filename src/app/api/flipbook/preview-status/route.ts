@@ -1,7 +1,7 @@
 import { headers } from "next/headers"
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
-import { PREVIEW_DURATION_S, resolveBook, hasPurchased, verifyPreviewCookie } from "@/lib/flipbook-access"
+import { PREVIEW_DURATION_S, previewCookieName, resolveBook, hasPurchased, verifyPreviewCookie } from "@/lib/flipbook-access"
 
 // Lets the flipbook page check preview eligibility before ever loading the
 // reader iframe — without this, a visitor whose preview already expired in
@@ -27,7 +27,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ purchased: true, expired: false }, { headers: { "Cache-Control": "no-store" } })
   }
 
-  const existing = request.cookies.get(`ib_preview_${bookSlug}`)?.value
+  const cookieName = previewCookieName(bookSlug, Boolean(session?.user?.id))
+  const existing = request.cookies.get(cookieName)?.value
   const verified = existing ? verifyPreviewCookie(existing, book.id) : null
 
   const expired = verified ? (Date.now() - verified.startedAt) / 1000 > PREVIEW_DURATION_S : false

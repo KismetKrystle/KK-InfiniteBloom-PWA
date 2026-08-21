@@ -2,7 +2,19 @@ import { createHmac, timingSafeEqual } from "crypto"
 import { sql } from "@/lib/db"
 
 export const PREVIEW_DURATION_S = 180
-export const PREVIEW_COOKIE_MAX_AGE_S = 60 * 60 * 24 // 24h — how long before an anonymous visitor gets another free preview
+
+// Signed-in (but not yet purchased) visitors get their free preview back
+// every 24h. Anonymous visitors get one taste, full stop — their preview
+// cookie is set to (effectively) never expire, so it never silently
+// resets; the paywall stays up until they sign in or buy. Signing in
+// starts a *different* cookie, so it isn't blocked by prior anonymous
+// browsing on the same device.
+export const PREVIEW_COOKIE_MAX_AGE_S = 60 * 60 * 24 // 24h — signed-in, not purchased
+export const PREVIEW_COOKIE_PERMANENT_S = 60 * 60 * 24 * 400 // ~400 days — anonymous (browsers cap cookie lifetime around here anyway)
+
+export function previewCookieName(bookSlug: string, signedIn: boolean): string {
+  return signedIn ? `ib_preview_user_${bookSlug}` : `ib_preview_${bookSlug}`
+}
 
 // Book metadata never changes without a deploy, and purchase status changes
 // rarely enough that a short TTL is safe — both are cheap to cache in-memory
