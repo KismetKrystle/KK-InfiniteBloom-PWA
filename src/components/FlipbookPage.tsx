@@ -12,6 +12,7 @@ import PromptJournal from './PromptJournal'
 import SharedNavbar from './SharedNavbar'
 import FlipbookNavbar from './FlipbookNavbar'
 import CommentSection from './CommentSection'
+import PWAInstallButton from './PWAInstallButton'
 
 const PREVIEW_DURATION_S = 180
 const GRACE_PERIOD_MS = 10_000
@@ -129,6 +130,12 @@ export default function FlipbookPage({ user, hasPurchased, bookSlug }: FlipbookP
           <div className="mb-4 md:mb-6 text-left">
             <h2 className="text-2xl">Welcome to Infinite Bloom, </h2>
             <h2> {user.name}!</h2>
+          </div>
+        )}
+
+        {!isFullScreen && (
+          <div className="flex justify-end mb-4">
+            <PWAInstallButton />
           </div>
         )}
 
