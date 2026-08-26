@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Mail } from 'lucide-react'
+import { ArrowLeft, Mail } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -42,9 +42,10 @@ interface SharedNavbarProps {
   user: { id: string; name: string | null; email: string } | null
   dark?: boolean
   transparent?: boolean
+  showBack?: boolean
 }
 
-export default function SharedNavbar({ user, dark = false, transparent = false }: SharedNavbarProps) {
+export default function SharedNavbar({ user, dark = false, transparent = false, showBack = true }: SharedNavbarProps) {
   const router = useRouter()
   const [purchasesData, setPurchasesData] = useState<PurchasesData | null>(null)
   const [devices, setDevices] = useState<Device[]>([])
@@ -101,30 +102,46 @@ export default function SharedNavbar({ user, dark = false, transparent = false }
     <>
       <header
         className={[
-          'fixed top-0 left-0 right-0 h-12 z-[60] flex items-center justify-between px-4',
+          'fixed top-0 left-0 right-0 z-[60] flex items-start justify-between px-4 py-2.5',
           dark ? 'bg-black/60 backdrop-blur-sm' : transparent ? 'bg-transparent' : 'bg-white',
         ].join(' ')}
       >
-        <a href="/?section=bento" className="flex items-center h-full">
-          <img
-            src="https://res.cloudinary.com/dsoojlgg1/image/upload/v1779143359/infinite_bloom_logo_ncxs5k.png"
-            alt="Infinite Bloom"
-            className="h-8 w-auto"
-          />
-        </a>
+        <div className="flex flex-col items-start gap-2">
+          <a href="/?section=bento" className="flex items-center">
+            <img
+              src="https://res.cloudinary.com/dsoojlgg1/image/upload/v1779143359/infinite_bloom_logo_ncxs5k.png"
+              alt="Infinite Bloom"
+              className="h-10 w-auto"
+            />
+          </a>
+
+          {showBack && (
+            <button
+              onClick={() => router.back()}
+              aria-label="Go back"
+              className={[
+                'flex items-center gap-1 text-xs transition-opacity',
+                dark ? 'text-white/70 hover:text-white' : 'text-[#888] hover:text-[#111]',
+              ].join(' ')}
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              Back
+            </button>
+          )}
+        </div>
 
         {!user ? (
           <button
             onClick={() => router.push('/login')}
             style={{ fontFamily: 'Inter, sans-serif', fontSize: '15px', fontWeight: 500, letterSpacing: '0.04em' }}
-            className={dark ? 'text-white' : 'text-[#111]'}
+            className={['flex items-center h-10', dark ? 'text-white' : 'text-[#111]'].join(' ')}
             onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')}
             onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}
           >
             Sign In
           </button>
         ) : (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 h-10">
             <button
               onClick={() => router.push('/dashboard/messages')}
               aria-label="Messages"

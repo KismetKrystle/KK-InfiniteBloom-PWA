@@ -19,7 +19,7 @@ export default async function AudioPage() {
     <div className="min-h-screen bg-white">
       <SharedNavbar user={session?.user ?? null} />
       <main
-        className="max-w-3xl mx-auto px-4 pt-20 pb-12"
+        className="max-w-3xl mx-auto px-4 pt-24 pb-12"
         style={hasAccess ? undefined : { filter: 'blur(4px)', pointerEvents: 'none', userSelect: 'none' }}
       >
         <h1 className="text-2xl font-bold text-[#111] mb-1">Infinite Bloom: Audio Poems</h1>

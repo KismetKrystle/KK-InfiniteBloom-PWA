@@ -31,7 +31,7 @@ export default async function MessagesPage() {
   return (
     <>
       <SharedNavbar user={session.user} />
-      <main className="min-h-screen bg-[#f5f5f5] flex flex-col pt-12">
+      <main className="min-h-screen bg-[#f5f5f5] flex flex-col pt-24">
         <div className="flex-1 max-w-2xl w-full mx-auto px-4 py-8">
           <h1
             style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: '1.5rem', color: '#111' }}

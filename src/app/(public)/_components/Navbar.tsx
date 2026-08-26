@@ -7,5 +7,5 @@ interface NavbarProps {
 }
 
 export default function Navbar({ user }: NavbarProps) {
-  return <SharedNavbar user={user} />
+  return <SharedNavbar user={user} showBack={false} />
 }
