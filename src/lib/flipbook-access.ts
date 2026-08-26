@@ -1,16 +1,23 @@
 import { createHmac, timingSafeEqual } from "crypto"
 import { sql } from "@/lib/db"
 
-export const PREVIEW_DURATION_S = 180
+export const PREVIEW_DURATION_S = 300
 
-// Signed-in (but not yet purchased) visitors get their free preview back
-// every 24h. Anonymous visitors get one taste, full stop — their preview
-// cookie is set to (effectively) never expire, so it never silently
-// resets; the paywall stays up until they sign in or buy. Signing in
-// starts a *different* cookie, so it isn't blocked by prior anonymous
-// browsing on the same device.
-export const PREVIEW_COOKIE_MAX_AGE_S = 60 * 60 * 24 // 24h — signed-in, not purchased
-export const PREVIEW_COOKIE_PERMANENT_S = 60 * 60 * 24 * 400 // ~400 days — anonymous (browsers cap cookie lifetime around here anyway)
+// The client pings /api/flipbook/preview-heartbeat on this cadence while the
+// book is open AND the tab is visible (paused otherwise via the Page
+// Visibility API). Each accepted ping adds exactly this many seconds to the
+// cookie's usedS — never a client-supplied duration — so the budget can't be
+// inflated by clock tricks, and it stops accumulating the instant the tab is
+// backgrounded or the reader is closed.
+export const PREVIEW_HEARTBEAT_TICK_S = 5
+
+// Every visitor (signed in or anonymous) gets a 5-minute *active* preview,
+// full stop — accumulated in usedS across the cookie's ~400-day lifetime, so
+// it never silently resets on reload/return, and never runs down while the
+// visitor isn't actually on the page. The paywall stays up until they buy.
+// Signing in starts a *different* cookie, so it isn't blocked by prior
+// anonymous browsing on the same device.
+export const PREVIEW_COOKIE_MAX_AGE_S = 60 * 60 * 24 * 400 // ~400 days (browsers cap cookie lifetime around here anyway)
 
 export function previewCookieName(bookSlug: string, signedIn: boolean): string {
   return signedIn ? `ib_preview_user_${bookSlug}` : `ib_preview_${bookSlug}`
@@ -33,7 +40,7 @@ function sign(payloadB64: string): string {
   return createHmac("sha256", cookieSecret()).update(payloadB64).digest("base64url")
 }
 
-export function verifyPreviewCookie(value: string, bookId: string): { startedAt: number } | null {
+export function verifyPreviewCookie(value: string, bookId: string): { usedS: number } | null {
   const [payloadB64, signature] = value.split(".")
   if (!payloadB64 || !signature) return null
 
@@ -44,15 +51,15 @@ export function verifyPreviewCookie(value: string, bookId: string): { startedAt:
 
   try {
     const payload = JSON.parse(Buffer.from(payloadB64, "base64url").toString("utf8"))
-    if (payload.bookId !== bookId || typeof payload.startedAt !== "number") return null
-    return { startedAt: payload.startedAt }
+    if (payload.bookId !== bookId || typeof payload.usedS !== "number") return null
+    return { usedS: payload.usedS }
   } catch {
     return null
   }
 }
 
-export function makePreviewCookie(bookId: string, startedAt: number): string {
-  const payloadB64 = Buffer.from(JSON.stringify({ bookId, startedAt })).toString("base64url")
+export function makePreviewCookie(bookId: string, usedS: number): string {
+  const payloadB64 = Buffer.from(JSON.stringify({ bookId, usedS })).toString("base64url")
   return `${payloadB64}.${sign(payloadB64)}`
 }
 

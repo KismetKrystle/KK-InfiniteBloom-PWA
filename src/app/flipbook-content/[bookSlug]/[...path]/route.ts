@@ -6,7 +6,6 @@ import { r2Client, R2_BUCKET } from "@/lib/r2"
 import {
   PREVIEW_DURATION_S,
   PREVIEW_COOKIE_MAX_AGE_S,
-  PREVIEW_COOKIE_PERMANENT_S,
   previewCookieName,
   resolveBook,
   hasPurchased,
@@ -56,17 +55,19 @@ export async function GET(
   if (!purchased) {
     const existing = request.cookies.get(cookieName)?.value
     const verified = existing ? verifyPreviewCookie(existing, book.id) : null
+    const usedS = verified?.usedS ?? 0
 
-    const now = Date.now()
-    const startedAt = verified?.startedAt ?? now
-    const elapsedS = (now - startedAt) / 1000
-
-    if (elapsedS > PREVIEW_DURATION_S) {
+    // usedS only ever grows via /api/flipbook/preview-heartbeat (paused
+    // while the tab isn't visible or the reader is closed) — this route
+    // just checks the running total and, on a visitor's very first
+    // request, plants the cookie at 0 so later requests have something to
+    // read and increment.
+    if (usedS >= PREVIEW_DURATION_S) {
       return errorResponse("Preview expired", 403)
     }
 
     if (!verified) {
-      cookieToSet = makePreviewCookie(book.id, startedAt)
+      cookieToSet = makePreviewCookie(book.id, 0)
     }
   }
 
@@ -112,8 +113,10 @@ export async function GET(
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      path: "/flipbook-content",
-      maxAge: signedIn ? PREVIEW_COOKIE_MAX_AGE_S : PREVIEW_COOKIE_PERMANENT_S,
+      // "/" (not scoped to /flipbook-content) so the heartbeat and
+      // status endpoints under /api/flipbook can read and update it too.
+      path: "/",
+      maxAge: PREVIEW_COOKIE_MAX_AGE_S,
     })
   }
 

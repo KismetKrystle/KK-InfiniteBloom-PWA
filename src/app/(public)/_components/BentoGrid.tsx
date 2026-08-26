@@ -66,6 +66,11 @@ function BentoCard({
     ? '0 12px 40px rgba(0,0,0,0.14)'
     : '0 2px 8px rgba(0,0,0,0.06)'
 
+  // Sunken look for the Buy Book bar only — a vignette-style inset shadow
+  // reads as "pressed in" against the flat outer drop shadow every other
+  // card uses.
+  const innerShadow = accent ? ', inset 0 0 22px rgba(0,0,0,0.28)' : ''
+
   return (
     <div
       onClick={onClick}
@@ -76,7 +81,7 @@ function BentoCard({
         background: bg,
         backdropFilter: 'blur(3px)',
         WebkitBackdropFilter: 'blur(3px)',
-        boxShadow: shadow,
+        boxShadow: shadow + innerShadow,
         transform: hovered ? 'translateY(-2px)' : 'translateY(0)',
         transition: 'box-shadow 200ms ease-out, transform 200ms ease-out, background 150ms ease',
       }}

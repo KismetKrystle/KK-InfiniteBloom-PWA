@@ -28,7 +28,7 @@ const products = [
   },
   {
     id: "physical-color",
-    name: "Physical Book - Full Color",
+    name: "Physical Book",
     price: "$33",
     description: "The complete vision in your hands.",
     features: [
@@ -50,7 +50,7 @@ const fallbackTestimonials = [
   {
     author: "A. Johnson",
     title: "Reader",
-    quote: "Infinite Bloom stopped me in my tracks. I read it twice in one sitting.",
+    quote: "Infinite Bloom stopped me in my tracks. I had to sit with myself and reflect.",
   },
   {
     author: "M. Davis",

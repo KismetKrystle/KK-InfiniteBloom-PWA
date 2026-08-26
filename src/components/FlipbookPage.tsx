@@ -14,7 +14,10 @@ import FlipbookNavbar from './FlipbookNavbar'
 import CommentSection from './CommentSection'
 import PWAInstallButton from './PWAInstallButton'
 
-const PREVIEW_DURATION_S = 180
+// Must match PREVIEW_HEARTBEAT_TICK_S in src/lib/flipbook-access.ts — the
+// server is the source of truth for the actual budget, this just paces how
+// often the client checks in.
+const HEARTBEAT_TICK_MS = 5_000
 const GRACE_PERIOD_MS = 10_000
 const SHOW_WRITE_REFLECT = false
 
@@ -33,8 +36,8 @@ export default function FlipbookPage({ user, hasPurchased, bookSlug }: FlipbookP
   // Preview state — unused when hasPurchased
   const [interactionCaptured, setInteractionCaptured] = useState(false)
   const [paywallActive, setPaywallActive] = useState(false)
-  const [paywallDismissed, setPaywallDismissed] = useState(false)
   const [previewExpired, setPreviewExpired] = useState(false)
+  const [checkoutLoading, setCheckoutLoading] = useState(false)
 
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const graceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -91,27 +94,75 @@ export default function FlipbookPage({ user, hasPurchased, bookSlug }: FlipbookP
     setShowFlipbook(true)
   }
 
+  // Only counts down while the reader is actually open in front of someone:
+  // each tick is a heartbeat to the server, skipped whenever the tab is
+  // backgrounded, so stepping away pauses the budget instead of burning it
+  // — and since the server tracks the real total against the cookie, coming
+  // back later (even after a reload) resumes from the true remaining time
+  // instead of starting over.
+  async function sendHeartbeat() {
+    if (document.hidden) return
+    try {
+      const res = await fetch('/api/flipbook/preview-heartbeat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookSlug }),
+      })
+      const data = await res.json()
+      if (data.expired) {
+        if (countdownRef.current) clearInterval(countdownRef.current)
+        setPaywallActive(true)
+      }
+    } catch {
+      // Network hiccup — try again on the next tick.
+    }
+  }
+
   function handleFirstInteraction() {
-    console.log('[Paywall] First click detected — starting grace period', GRACE_PERIOD_MS, 'ms')
     setInteractionCaptured(true)
     graceRef.current = setTimeout(() => {
-      console.log('[Paywall] Grace period ended — starting countdown', PREVIEW_DURATION_S, 's')
-      let remaining = PREVIEW_DURATION_S
-      countdownRef.current = setInterval(() => {
-        remaining -= 1
-        console.log('[Paywall] Tick —', remaining, 's remaining')
-        if (remaining <= 0) {
-          console.log('[Paywall] Countdown complete — setting paywallActive = true')
-          clearInterval(countdownRef.current!)
-          setPaywallActive(true)
-        }
-      }, 1_000)
+      countdownRef.current = setInterval(sendHeartbeat, HEARTBEAT_TICK_MS)
     }, GRACE_PERIOD_MS)
   }
 
-  function handleDismissPaywall() {
+  // Stops the heartbeat and resets local preview state on close so
+  // reopening re-derives paywallActive fresh from the server via
+  // handleOpenBook, instead of carrying stale in-memory state forward.
+  function closeFlipbook() {
+    if (countdownRef.current) clearInterval(countdownRef.current)
+    if (graceRef.current) clearTimeout(graceRef.current)
+    countdownRef.current = null
+    graceRef.current = null
+    setInteractionCaptured(false)
     setPaywallActive(false)
-    setPaywallDismissed(true)
+    setPreviewExpired(false)
+    setShowFlipbook(false)
+  }
+
+  // Sends a would-be buyer straight to the Stripe payment screen instead of
+  // back through the product page — one less click between "I want this"
+  // and paying. Anonymous visitors still need an account first, since
+  // checkout is tied to a signed-in user.
+  async function handleGetCopy() {
+    if (!user) {
+      router.push('/login')
+      return
+    }
+    setCheckoutLoading(true)
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productType: 'flipbook' }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.url) throw new Error(data.error ?? 'Could not start checkout')
+      window.location.href = data.url
+    } catch {
+      router.push('/?pricing=open')
+    } finally {
+      setCheckoutLoading(false)
+    }
   }
 
   return (
@@ -158,7 +209,7 @@ export default function FlipbookPage({ user, hasPurchased, bookSlug }: FlipbookP
                   {/* Mobile-only icons — hidden on md+ where SharedNavbar is always visible */}
                   <div className="md:hidden flex items-center gap-2 bg-black/40 backdrop-blur-sm rounded-full px-2 py-2">
                     <button
-                      onClick={() => { setShowFlipbook(false); setPreviewExpired(false) }}
+                      onClick={closeFlipbook}
                       aria-label="Close flipbook"
                       className="flex items-center justify-center p-1 text-white/80 hover:text-white transition-opacity"
                     >
@@ -193,7 +244,7 @@ export default function FlipbookPage({ user, hasPurchased, bookSlug }: FlipbookP
                 <div className="w-full h-full flex items-center justify-center bg-white">
                   <div className="relative bg-white rounded-2xl px-8 py-10 max-w-sm mx-4 text-center">
                     <button
-                      onClick={() => { setShowFlipbook(false); setPreviewExpired(false) }}
+                      onClick={closeFlipbook}
                       aria-label="Close"
                       className="absolute top-3 right-3 text-[#aaa] hover:text-[#333] transition-colors"
                     >
@@ -202,13 +253,14 @@ export default function FlipbookPage({ user, hasPurchased, bookSlug }: FlipbookP
                     <p className="text-xs uppercase tracking-widest text-[#aaa] mb-3">Free Preview Ended</p>
                     <h3 className="text-xl font-semibold text-[#111] mb-2">Enjoyed what you read?</h3>
                     <p className="text-sm text-[#666] mb-6">Get the full Infinite Bloom experience — every poem, every page.</p>
-                    <a
-                      href={user ? '/' : '/?pricing=open'}
-                      className="block w-full py-3 rounded-xl text-white font-medium text-sm transition-opacity hover:opacity-90"
+                    <button
+                      onClick={handleGetCopy}
+                      disabled={checkoutLoading}
+                      className="block w-full py-3 rounded-xl text-white font-medium text-sm transition-opacity hover:opacity-90 disabled:opacity-50"
                       style={{ backgroundColor: '#F27D26' }}
                     >
-                      Get Your Copy
-                    </a>
+                      {checkoutLoading ? 'Redirecting…' : 'Get Your Copy'}
+                    </button>
                     {!user && (
                       <p className="mt-4 text-xs text-[#aaa]">
                         Already have access?{' '}
@@ -251,27 +303,24 @@ export default function FlipbookPage({ user, hasPurchased, bookSlug }: FlipbookP
                     />
                   )}
 
-                  {/* Paywall overlay — this session's countdown ran out while reading */}
+                  {/* Paywall overlay — this session's countdown ran out while reading.
+                      Not dismissible: the free preview is used up, so reading stops here
+                      until purchase. Closing the flipbook entirely is still possible via
+                      the mobile close (X) button in the top controls. */}
                   {!hasPurchased && paywallActive && (
                     <div className="absolute inset-0 z-20 flex items-center justify-center backdrop-blur-sm bg-white/80">
                       <div className="relative bg-white rounded-2xl shadow-2xl px-8 py-10 max-w-sm mx-4 text-center">
-                        <button
-                          onClick={handleDismissPaywall}
-                          aria-label="Dismiss"
-                          className="absolute top-3 right-3 text-[#aaa] hover:text-[#333] transition-colors"
-                        >
-                          <X className="w-5 h-5" />
-                        </button>
                         <p className="text-xs uppercase tracking-widest text-[#aaa] mb-3">Free Preview Ended</p>
                         <h3 className="text-xl font-semibold text-[#111] mb-2">Enjoyed what you read?</h3>
                         <p className="text-sm text-[#666] mb-6">Get the full Infinite Bloom experience — every poem, every page.</p>
-                        <a
-                          href={user ? '/' : '/?pricing=open'}
-                          className="block w-full py-3 rounded-xl text-white font-medium text-sm transition-opacity hover:opacity-90"
+                        <button
+                          onClick={handleGetCopy}
+                          disabled={checkoutLoading}
+                          className="block w-full py-3 rounded-xl text-white font-medium text-sm transition-opacity hover:opacity-90 disabled:opacity-50"
                           style={{ backgroundColor: '#F27D26' }}
                         >
-                          Get Your Copy
-                        </a>
+                          {checkoutLoading ? 'Redirecting…' : 'Get Your Copy'}
+                        </button>
                         {!user && (
                           <p className="mt-4 text-xs text-[#aaa]">
                             Already have access?{' '}
@@ -280,17 +329,6 @@ export default function FlipbookPage({ user, hasPurchased, bookSlug }: FlipbookP
                         )}
                       </div>
                     </div>
-                  )}
-
-                  {/* Persistent floating button after paywall dismissed */}
-                  {!hasPurchased && paywallDismissed && (
-                    <a
-                      href={user ? '/' : '/?pricing=open'}
-                      className="absolute bottom-14 left-4 z-10 px-4 py-2 rounded-xl text-white text-sm font-medium shadow-lg transition-opacity hover:opacity-90"
-                      style={{ backgroundColor: '#F27D26' }}
-                    >
-                      Get Your Copy
-                    </a>
                   )}
                 </>
               )}

@@ -4,6 +4,7 @@ import { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import Navbar from './Navbar'
 import BentoGrid from './BentoGrid'
 import HeroSection from './HeroSection'
+import { WavyBackground } from '@/components/ui/wavy-background'
 
 interface User {
   id: string
@@ -65,24 +66,37 @@ export default function Homepage({ user, hasPurchase }: HomepageProps) {
       <HeroSection />
 
       <div className="sticky top-0">
-        <main className="h-screen overflow-hidden bg-[#f5f5f5] flex flex-col">
-          <Navbar user={user} />
+        <main className="relative h-screen overflow-hidden flex flex-col">
+          <WavyBackground
+            backgroundFill="white"
+            colors={["#38bdf8", "#818cf8", "#c084fc", "#e879f9", "#22d3ee"]}
+            waveOpacity={0.2}
+            waveWidth={40}
+            blur={16}
+            speed="slow"
+            containerClassName="absolute inset-0 h-full w-full"
+            className="hidden"
+          />
 
-          <div className="h-16 flex-shrink-0" />
+          <div className="relative z-10 flex flex-col h-full">
+            <Navbar user={user} />
 
-          <div className="flex-1 min-h-0 overflow-hidden px-4">
-            <BentoGrid
-              user={user}
-              hasPurchase={hasPurchase}
-              onHover={handleHover}
-              headingText={headingText}
-              headingPulsed={headingPulsed}
-            />
+            <div className="h-16 flex-shrink-0" />
+
+            <div className="flex-1 min-h-0 overflow-hidden px-4">
+              <BentoGrid
+                user={user}
+                hasPurchase={hasPurchase}
+                onHover={handleHover}
+                headingText={headingText}
+                headingPulsed={headingPulsed}
+              />
+            </div>
+
+            <footer className="relative flex-shrink-0 py-4 text-center text-xs text-[#aaa]">
+              Krystle Wilson © 2026
+            </footer>
           </div>
-
-          <footer className="relative flex-shrink-0 py-4 text-center text-xs text-[#aaa]">
-            Krystle Wilson © 2026
-          </footer>
         </main>
       </div>
     </div>

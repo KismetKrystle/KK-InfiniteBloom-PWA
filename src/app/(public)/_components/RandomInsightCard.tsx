@@ -36,7 +36,13 @@ export default function RandomInsightCard() {
       >
         <p
           className="text-black/95"
-          style={{ fontFamily: 'Inter, sans-serif', fontSize: 'clamp(16px, 2.2vw, 22px)', fontStyle: 'italic', fontWeight: 700, lineHeight: 1.5 }}
+          style={{
+            fontFamily: 'Oswald, sans-serif',
+            fontSize: 'clamp(22px, 3.2vw, 34px)',
+            fontStyle: 'italic',
+            fontWeight: 600,
+            lineHeight: 1.35,
+          }}
         >
           {insight ? `"${insight.content}"` : ' '}
         </p>

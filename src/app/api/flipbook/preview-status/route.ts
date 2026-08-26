@@ -30,8 +30,10 @@ export async function GET(request: NextRequest) {
   const cookieName = previewCookieName(bookSlug, Boolean(session?.user?.id))
   const existing = request.cookies.get(cookieName)?.value
   const verified = existing ? verifyPreviewCookie(existing, book.id) : null
+  const usedS = verified?.usedS ?? 0
 
-  const expired = verified ? (Date.now() - verified.startedAt) / 1000 > PREVIEW_DURATION_S : false
+  const expired = usedS >= PREVIEW_DURATION_S
+  const remainingS = Math.max(0, PREVIEW_DURATION_S - usedS)
 
-  return NextResponse.json({ purchased: false, expired }, { headers: { "Cache-Control": "no-store" } })
+  return NextResponse.json({ purchased: false, expired, remainingS }, { headers: { "Cache-Control": "no-store" } })
 }

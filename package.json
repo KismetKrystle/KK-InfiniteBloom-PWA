@@ -41,6 +41,7 @@
             "react-hook-form": "^7.55.0",
             "react-router-dom": "*",
             "recharts": "^2.15.2",
+            "simplex-noise": "^4.0.3",
             "sonner": "^2.0.3",
             "stripe": "^22.5.0",
             "tailwind-merge": "*"

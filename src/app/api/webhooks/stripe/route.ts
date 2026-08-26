@@ -75,5 +75,20 @@ export async function POST(request: NextRequest) {
     `
   }
 
+  if (event.type === 'charge.refunded') {
+    const charge = event.data.object as Stripe.Charge
+
+    const paymentIntentId =
+      typeof charge.payment_intent === 'string' ? charge.payment_intent : charge.payment_intent?.id ?? null
+
+    if (paymentIntentId && charge.refunded) {
+      await sql`
+        UPDATE purchases
+        SET status = 'refunded', access_granted = false
+        WHERE stripe_payment_intent_id = ${paymentIntentId}
+      `
+    }
+  }
+
   return NextResponse.json({ ok: true })
 }
