@@ -2,6 +2,7 @@ import { headers } from "next/headers"
 import { auth } from "@/lib/auth"
 import { sql } from "@/lib/db"
 import Homepage from "./_components/Homepage"
+import BookSchema from "@/components/BookSchema"
 
 export default async function Page() {
   const session = await auth.api.getSession({ headers: await headers() }).catch(() => null)
@@ -23,5 +24,10 @@ export default async function Page() {
     ? { id: session.user.id, name: session.user.name ?? null, email: session.user.email }
     : null
 
-  return <Homepage user={user} hasPurchase={hasPurchase} />
+  return (
+    <>
+      <BookSchema />
+      <Homepage user={user} hasPurchase={hasPurchase} />
+    </>
+  )
 }
