@@ -4,25 +4,27 @@ import { useState, useEffect, useRef } from 'react'
 import { ChevronDown } from 'lucide-react'
 import RandomInsightCard from './RandomInsightCard'
 
-// 9 rows, opacity peaking at the true center (row 5), fading symmetrically
-// outward. Directions alternate, anchored so the center row scrolls left.
-const ROWS: { direction: 'left' | 'right'; opacity: number }[] = [
-  { direction: 'left', opacity: 0.1 },
-  { direction: 'right', opacity: 0.2 },
-  { direction: 'left', opacity: 0.4 },
-  { direction: 'right', opacity: 0.6 },
-  { direction: 'left', opacity: 1 },
-  { direction: 'right', opacity: 0.6 },
-  { direction: 'left', opacity: 0.4 },
-  { direction: 'right', opacity: 0.2 },
-  { direction: 'left', opacity: 0.1 },
+// 7 rows, opacity peaking at the true center (row 4), fading symmetrically
+// outward through the surrounding roles. Directions alternate, anchored so
+// the center row scrolls left.
+const ROWS: { direction: 'left' | 'right'; opacity: number; word: string }[] = [
+  { direction: 'right', opacity: 0.2, word: 'POET' },
+  { direction: 'left', opacity: 0.4, word: 'KISMET' },
+  { direction: 'right', opacity: 0.6, word: 'SPEAKER' },
+  { direction: 'left', opacity: 1, word: 'KISMET' },
+  { direction: 'right', opacity: 0.6, word: 'AUTHOR' },
+  { direction: 'left', opacity: 0.4, word: 'KISMET' },
+  { direction: 'right', opacity: 0.2, word: 'ENTREPRENEUR' },
 ]
 
-const WORD_REPEAT = Array(20).fill('KISMET').join('        ')
+function repeatWord(word: string): string {
+  return Array(20).fill(word).join('        ')
+}
 
-// 35s at full speed, slowed to 35% of that (-65%), then slowed a further 25%
-// on top of that — duration scales inversely with speed at each step.
-const LOOP_DURATION_S = 35 / 0.35 / 0.75
+// 35s at full speed, slowed to 35% of that (-65%), then slowed a further
+// 25%, then a further 10% on top of that — duration scales inversely with
+// speed at each step.
+const LOOP_DURATION_S = 35 / 0.35 / 0.75 / 0.9
 
 const FADE_START_PX = 200
 const FADE_END_PX = 500
@@ -83,7 +85,7 @@ export default function HeroSection() {
                     lineHeight: 0.85,
                   }}
                 >
-                  {WORD_REPEAT}
+                  {repeatWord(row.word)}
                 </span>
               ))}
             </div>

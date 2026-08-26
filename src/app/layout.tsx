@@ -6,7 +6,7 @@ const OG_IMAGE = "https://res.cloudinary.com/dsoojlgg1/image/upload/v1779156322/
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "Infinite Bloom | Poetry Book by Kismet Krystle | Poems & Audio Narration",
+  title: "Kismet Krystle | Poet & Speaker | Infinite Bloom Author",
   description:
     "Infinite Bloom: 45 poems by Kismet Krystle, an award-winning poet & speaker. Read, listen, and explore 143 reflective insights. Available as digital flipbook ($20) and full-color physical book ($33).",
   keywords: ["poetry book", "spoken word", "Kismet Krystle", "audio poems", "digital book"],
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     canonical: SITE_URL,
   },
   openGraph: {
-    title: "Infinite Bloom | Poetry Book by Kismet Krystle",
+    title: "Kismet Krystle | Poet & Speaker | Infinite Bloom Author",
     description:
       "45 poems with author narration. Read, listen, revisit offline. Explore 143 reflective insights about growth, spirituality, and human connection.",
     url: SITE_URL,
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Infinite Bloom | Poetry Book by Kismet Krystle",
+    title: "Kismet Krystle | Poet & Speaker | Infinite Bloom Author",
     description: "45 poems with author narration. Read, listen, and explore reflective insights.",
     images: [OG_IMAGE],
   },
