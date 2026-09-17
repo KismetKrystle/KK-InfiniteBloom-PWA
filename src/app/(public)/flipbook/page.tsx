@@ -24,6 +24,11 @@ export default async function FlipbookRoute() {
       AND p.type = 'flipbook'
       AND pu.status = 'completed'
       AND pu.access_granted = true
+      UNION ALL
+      SELECT 1 FROM access_grants ag
+      WHERE lower(ag.email) = lower(${session.user.email})
+        AND ag.revoked_at IS NULL
+        AND (ag.expires_at IS NULL OR ag.expires_at > NOW())
       LIMIT 1
     `
     hasPurchased = rows.length > 0

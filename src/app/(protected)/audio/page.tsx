@@ -11,16 +11,16 @@ import AudioWelcomeModal from '@/components/AudioWelcomeModal'
 
 export default async function AudioPage() {
   const session = await auth.api.getSession({ headers: await headers() })
-  const { purchased, claimed, hasAccess } = await getAudioAccess(session?.user?.id)
+  const { purchased, claimed, granted, hasAccess } = await getAudioAccess(session?.user?.id, session?.user?.email)
 
-  const unlockedVia = purchased ? 'purchase' : claimed ? 'claim' : null
+  const unlockedVia = purchased ? 'purchase' : claimed ? 'claim' : granted ? 'grant' : null
 
   return (
     <div className="min-h-screen bg-white">
       <SharedNavbar user={session?.user ?? null} />
       <main
-        className="max-w-3xl mx-auto px-4 pt-24 pb-12"
-        style={hasAccess ? undefined : { filter: 'blur(4px)', pointerEvents: 'none', userSelect: 'none' }}
+        className="max-w-3xl mx-auto px-4 pt-28 pb-12"
+        style={hasAccess ? undefined : { filter: 'blur(2px)', pointerEvents: 'none', userSelect: 'none' }}
       >
         <h1 className="text-2xl font-bold text-[#111] mb-1">Infinite Bloom: Audio Poems</h1>
         <p className="text-sm text-[#666] mb-6">
@@ -37,7 +37,7 @@ export default async function AudioPage() {
       {!session && <AudioSignupGate />}
 
       {session && !hasAccess && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 overflow-y-auto bg-white/70 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 overflow-y-auto bg-white/40 backdrop-blur-[2px]">
           <div className="w-full max-w-sm max-h-full overflow-y-auto bg-white rounded-2xl border border-[#d4d4d4] shadow-2xl px-6 py-6">
             <h2 className="text-lg font-medium text-[#111] mb-1">Full audio access is exclusive to book owners</h2>
             <p className="text-sm text-[#888] mb-2">

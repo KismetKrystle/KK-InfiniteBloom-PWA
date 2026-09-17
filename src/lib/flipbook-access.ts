@@ -82,7 +82,11 @@ export async function resolveBook(bookSlug: string) {
   return resolved ?? undefined
 }
 
-export async function hasPurchased(authUserId: string | undefined, bookId: string): Promise<boolean> {
+export async function hasPurchased(
+  authUserId: string | undefined,
+  email: string | undefined,
+  bookId: string
+): Promise<boolean> {
   if (!authUserId) return false
 
   const cacheKey = `${authUserId}:${bookId}`
@@ -95,6 +99,11 @@ export async function hasPurchased(authUserId: string | undefined, bookId: strin
       AND pu.user_id = (SELECT id FROM user_profiles WHERE auth_user_id = ${authUserId})
       AND pu.status = 'completed'
       AND pu.access_granted = true
+    UNION ALL
+    SELECT 1 FROM access_grants ag
+    WHERE lower(ag.email) = lower(${email ?? ''})
+      AND ag.revoked_at IS NULL
+      AND (ag.expires_at IS NULL OR ag.expires_at > NOW())
     LIMIT 1
   `
   const purchased = rows.length > 0

@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Not found" }, { status: 404 })
   }
 
-  const purchased = await hasPurchased(session?.user?.id, book.id)
+  const purchased = await hasPurchased(session?.user?.id, session?.user?.email, book.id)
   if (purchased) {
     return NextResponse.json({ purchased: true, expired: false }, { headers: { "Cache-Control": "no-store" } })
   }

@@ -16,7 +16,16 @@ export async function GET() {
     )
     AND pu.status = 'completed'
     AND pu.access_granted = true
-    ORDER BY pu.created_at DESC
+
+    UNION ALL
+
+    SELECT 'Complimentary Access' AS product_name, 'flipbook' AS product_type, ag.created_at
+    FROM access_grants ag
+    WHERE lower(ag.email) = lower(${session.user.email})
+      AND ag.revoked_at IS NULL
+      AND (ag.expires_at IS NULL OR ag.expires_at > NOW())
+
+    ORDER BY created_at DESC
   `
 
   const deviceCountResult = await sql`

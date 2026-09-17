@@ -10,11 +10,16 @@ export default async function Page() {
   let hasPurchase = false
   if (session) {
     const rows = await sql`
-      SELECT p.id FROM purchases p
+      SELECT 1 FROM purchases p
       JOIN user_profiles up ON p.user_id = up.id
       WHERE up.auth_user_id = ${session.user.id}
         AND p.status = 'completed'
         AND p.access_granted = true
+      UNION ALL
+      SELECT 1 FROM access_grants ag
+      WHERE lower(ag.email) = lower(${session.user.email})
+        AND ag.revoked_at IS NULL
+        AND (ag.expires_at IS NULL OR ag.expires_at > NOW())
       LIMIT 1
     `
     hasPurchase = rows.length > 0

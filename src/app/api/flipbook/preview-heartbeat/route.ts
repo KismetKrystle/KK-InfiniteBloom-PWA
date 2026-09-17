@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Not found" }, { status: 404 })
   }
 
-  const purchased = await hasPurchased(session?.user?.id, book.id)
+  const purchased = await hasPurchased(session?.user?.id, session?.user?.email, book.id)
   if (purchased) {
     return NextResponse.json({ purchased: true, expired: false, remainingS: PREVIEW_DURATION_S }, { headers: { "Cache-Control": "no-store" } })
   }

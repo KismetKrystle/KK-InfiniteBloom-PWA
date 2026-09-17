@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 const SESSION_KEY = 'audioWelcomeModalShown'
 
 interface AudioWelcomeModalProps {
-  unlockedVia: 'purchase' | 'claim' | null
+  unlockedVia: 'purchase' | 'claim' | 'grant' | null
 }
 
 export default function AudioWelcomeModal({ unlockedVia }: AudioWelcomeModalProps) {
@@ -25,18 +25,21 @@ export default function AudioWelcomeModal({ unlockedVia }: AudioWelcomeModalProp
   if (!visible || !unlockedVia) return null
 
   const isClaim = unlockedVia === 'claim'
+  const isGrant = unlockedVia === 'grant'
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
       <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
         <h2 className="text-xl font-semibold text-[#111] mb-3">
-          {isClaim ? 'Thank you for your book!' : 'Thank you for your purchase!'}
+          {isClaim ? 'Thank you for your book!' : isGrant ? 'Welcome!' : 'Thank you for your purchase!'}
         </h2>
 
         <p className="text-sm text-[#666] mb-2">
           {isClaim
             ? 'We verified your physical copy of Infinite Bloom. You now have full access to all 6 chapters with complete poem narrations.'
-            : "Here's full access to every chapter's complete narration — listen to full poems anytime."}
+            : isGrant
+              ? "You've been given complimentary access to Infinite Bloom — full narration, every chapter."
+              : "Here's full access to every chapter's complete narration — listen to full poems anytime."}
         </p>
 
         <p className="text-sm text-[#666] mb-4">

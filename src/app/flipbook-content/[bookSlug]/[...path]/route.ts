@@ -47,7 +47,7 @@ export async function GET(
     return NextResponse.redirect(new URL("/flipbook", request.url))
   }
 
-  const purchased = await hasPurchased(session?.user?.id, book.id)
+  const purchased = await hasPurchased(session?.user?.id, session?.user?.email, book.id)
   const signedIn = Boolean(session?.user?.id)
   const cookieName = previewCookieName(bookSlug, signedIn)
   let cookieToSet: string | null = null
