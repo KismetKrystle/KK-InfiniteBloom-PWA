@@ -29,7 +29,7 @@ export default function RandomInsightCard() {
   }, [])
 
   return (
-    <div className="absolute inset-0 z-10 flex items-center justify-center px-6">
+    <div className="absolute inset-0 z-10 flex items-center justify-center px-6 pointer-events-none">
       <div
         className="max-w-xl rounded-2xl border border-white/15 bg-white/30 backdrop-blur-sm px-8 py-6 text-center"
         style={{ opacity: insight ? 1 : 0, transition: 'opacity 500ms ease-out' }}

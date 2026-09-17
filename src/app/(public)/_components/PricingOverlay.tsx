@@ -118,6 +118,17 @@ export default function PricingOverlay({ onClose, user }: PricingOverlayProps) {
   return (
     <OverlayShell onClose={onClose}>
       <div className="px-6 md:px-16 py-20 max-w-5xl mx-auto">
+        <div className="mb-12 rounded-2xl overflow-hidden">
+          <video
+            src="https://res.cloudinary.com/w3qxov5o/video/upload/v1789636581/The_Inifinte_bloom_-_Flipbook_Preview_-_Animation.mp4"
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="w-full max-h-80 object-contain"
+          />
+        </div>
+
         <div className="mb-12 space-y-3">
           <p className="text-xs uppercase tracking-widest text-[#aaa]">Get the book</p>
           <h2 className="text-3xl font-light text-[#111]">Choose your format</h2>

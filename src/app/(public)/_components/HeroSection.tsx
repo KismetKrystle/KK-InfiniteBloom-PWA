@@ -104,7 +104,7 @@ export default function HeroSection() {
       <button
         onClick={handleScrollDown}
         aria-label="Scroll to content"
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center animate-bounce hover:opacity-70 transition-opacity pointer-events-auto gap-0"
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center animate-bounce hover:opacity-70 transition-opacity pointer-events-auto gap-0"
       >
         <ChevronDown className="w-10 h-10 text-white/80 leading-none" />
         <ChevronDown className="w-10 h-10 text-white/80 -mt-3 leading-none" />

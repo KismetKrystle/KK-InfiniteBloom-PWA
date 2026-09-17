@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from "react"
-import { X } from "lucide-react"
+import { ArrowLeft, X } from "lucide-react"
 
 interface OverlayShellProps {
   onClose: () => void
@@ -31,6 +31,21 @@ export default function OverlayShell({ onClose, children }: OverlayShellProps) {
       }}
       onClick={handleClose}
     >
+      <div className="fixed top-0 left-0 z-10 flex flex-col items-start gap-4 px-4 py-2.5">
+        <img
+          src="https://res.cloudinary.com/dsoojlgg1/image/upload/v1779143359/infinite_bloom_logo_ncxs5k.png"
+          alt="Infinite Bloom"
+          className="h-10 w-auto"
+        />
+        <button
+          onClick={(e) => { e.stopPropagation(); handleClose() }}
+          aria-label="Back"
+          className="ml-1 text-[#111] hover:opacity-70 transition-opacity"
+        >
+          <ArrowLeft className="w-6 h-6" strokeWidth={3} />
+        </button>
+      </div>
+
       <button
         onClick={(e) => { e.stopPropagation(); handleClose() }}
         className="fixed top-6 right-6 text-[#aaa] hover:text-[#111] transition-colors z-10"

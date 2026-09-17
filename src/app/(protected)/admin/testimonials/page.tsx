@@ -29,7 +29,7 @@ export default async function TestimonialsAdminPage() {
     return (
       <div className="min-h-screen bg-white">
         <SharedNavbar user={session.user} />
-        <main className="max-w-2xl mx-auto px-4 pt-24 pb-12 text-center">
+        <main className="max-w-2xl mx-auto px-4 pt-28 pb-12 text-center">
           <p className="text-sm text-[#aaa]">You don&apos;t have access to this page.</p>
         </main>
       </div>
@@ -45,7 +45,7 @@ export default async function TestimonialsAdminPage() {
   return (
     <div className="min-h-screen bg-white">
       <SharedNavbar user={session.user} />
-      <main className="max-w-3xl mx-auto px-4 pt-24 pb-12">
+      <main className="max-w-3xl mx-auto px-4 pt-28 pb-12">
         <h1 className="text-2xl font-bold text-[#111] mb-1">Testimonials</h1>
         <p className="text-sm text-[#666] mb-6">
           Pending review appear first. Approved ones show in the "What Readers Say" section.

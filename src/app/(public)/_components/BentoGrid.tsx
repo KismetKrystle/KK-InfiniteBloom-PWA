@@ -66,7 +66,7 @@ function BentoCard({
     ? '0 12px 40px rgba(0,0,0,0.14)'
     : '0 2px 8px rgba(0,0,0,0.06)'
 
-  // Sunken look for the Buy Book bar only — a vignette-style inset shadow
+  // Sunken look for the Printed Book bar only — a vignette-style inset shadow
   // reads as "pressed in" against the flat outer drop shadow every other
   // card uses.
   const innerShadow = accent ? ', inset 0 0 22px rgba(0,0,0,0.28)' : ''
@@ -208,8 +208,8 @@ export default function BentoGrid({ user, hasPurchase, onHover, headingText, hea
             <img
               src="https://res.cloudinary.com/dsoojlgg1/image/upload/v1765783633/Kismet_head_shot_wprdoh.jpg"
               alt="Kismet Krystle"
-              className="absolute top-9 right-4 rounded-full object-cover object-top"
-              style={{ width: 'clamp(80px, 20vw, 200px)', height: 'clamp(80px, 20vw, 200px)' }}
+              className="absolute top-4 right-4 rounded-full object-cover object-top aspect-square"
+              style={{ height: 'clamp(70px, 35%, 160px)', width: 'auto', maxHeight: 'calc(100% - 32px)' }}
             />
             <CardLabel label="About" sub="Poet · Author · Speaker · Entrepeneur" animated isHovered={aboutHovered} />
           </BentoCard>
@@ -233,7 +233,7 @@ export default function BentoGrid({ user, hasPurchase, onHover, headingText, hea
               className="absolute inset-x-0 bottom-0 pointer-events-none"
               style={{ height: '35%', background: 'linear-gradient(to top, rgba(235,235,235,0.95) 0%, transparent 100%)' }}
             />
-            <CardLabel label="Access Book" sub="Digital Flipbook" animated isHovered={accessHovered} />
+            <CardLabel label="Digital Book" sub="Poetry that fits in your pocket." animated isHovered={accessHovered} />
           </BentoCard>
 
         </div>
@@ -246,6 +246,30 @@ export default function BentoGrid({ user, hasPurchase, onHover, headingText, hea
             </AnimatedCardTitle>
           </h1>
         </div>
+
+        {/* Get Printed Book — full-width bar */}
+        <BentoCard
+          accent
+          className="flex-shrink-0 mb-[10px]"
+          onClick={() => setPricingOpen(true)}
+          hoverLabel="Get Printed Book"
+          onHover={onHover}
+          onHoveredChange={setGetBookHovered}
+        >
+          <div className="flex-1 flex items-center justify-center py-4 px-5">
+            <p
+              className="text-center"
+              style={{
+                fontFamily: 'Inter, sans-serif',
+                fontSize: 'clamp(22px, 3.2vw, 52px)',
+                fontWeight: 700,
+                color: 'white',
+              }}
+            >
+              <AnimatedCardTitle isHovered={getBookHovered}>Get Printed Book</AnimatedCardTitle>
+            </p>
+          </div>
+        </BentoCard>
 
         {/* Bottom grid: Audio + Events + Blog + Contact */}
         <div className="grid grid-cols-2 md:grid-cols-4 md:grid-rows-2 gap-[10px] flex-1 min-h-0">
@@ -281,6 +305,7 @@ export default function BentoGrid({ user, hasPurchase, onHover, headingText, hea
           {/* Events */}
           <BentoCard
             className="col-span-1 md:col-span-1 md:row-span-2"
+            onClick={() => router.push('/events')}
             hoverLabel="Events"
             onHover={onHover}
             onHoveredChange={setEventsHovered}
@@ -323,30 +348,6 @@ export default function BentoGrid({ user, hasPurchase, onHover, headingText, hea
           </BentoCard>
 
         </div>
-
-        {/* Get Book — full-width bar */}
-        <BentoCard
-          accent
-          className="flex-shrink-0 mt-[10px]"
-          onClick={() => setPricingOpen(true)}
-          hoverLabel="Buy Book"
-          onHover={onHover}
-          onHoveredChange={setGetBookHovered}
-        >
-          <div className="flex-1 flex items-center justify-center py-4 px-5">
-            <p
-              className="text-center"
-              style={{
-                fontFamily: 'Inter, sans-serif',
-                fontSize: 'clamp(22px, 3.2vw, 52px)',
-                fontWeight: 700,
-                color: 'white',
-              }}
-            >
-              <AnimatedCardTitle isHovered={getBookHovered}>Buy Book</AnimatedCardTitle>
-            </p>
-          </div>
-        </BentoCard>
 
       </div>
 

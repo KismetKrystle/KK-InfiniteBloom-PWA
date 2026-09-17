@@ -106,7 +106,7 @@ export default function SharedNavbar({ user, dark = false, transparent = false, 
           dark ? 'bg-black/60 backdrop-blur-sm' : transparent ? 'bg-transparent' : 'bg-white',
         ].join(' ')}
       >
-        <div className="flex flex-col items-start gap-2">
+        <div className="flex flex-col items-start gap-4">
           <a href="/?section=bento" className="flex items-center">
             <img
               src="https://res.cloudinary.com/dsoojlgg1/image/upload/v1779143359/infinite_bloom_logo_ncxs5k.png"
@@ -117,15 +117,14 @@ export default function SharedNavbar({ user, dark = false, transparent = false, 
 
           {showBack && (
             <button
-              onClick={() => router.back()}
+              onClick={() => router.push('/?section=bento')}
               aria-label="Go back"
               className={[
-                'flex items-center gap-1 text-xs transition-opacity',
-                dark ? 'text-white/70 hover:text-white' : 'text-[#888] hover:text-[#111]',
+                'ml-1 transition-opacity',
+                dark ? 'text-white/80 hover:text-white' : 'text-[#111] hover:opacity-70',
               ].join(' ')}
             >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              Back
+              <ArrowLeft className="w-6 h-6" strokeWidth={3} />
             </button>
           )}
         </div>
