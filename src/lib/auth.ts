@@ -1,10 +1,11 @@
 import { betterAuth } from "better-auth"
+import { magicLink } from "better-auth/plugins"
 import { Pool } from "pg"
 
-async function sendResetPasswordEmail({ user, url }: { user: { email: string }; url: string }) {
+async function sendAuthEmail({ to, subject, text }: { to: string; subject: string; text: string }) {
   const apiKey = process.env.RESEND_API_KEY
   if (!apiKey) {
-    console.error("Cannot send password reset email: RESEND_API_KEY not set")
+    console.error(`Cannot send email "${subject}": RESEND_API_KEY not set`)
     return
   }
 
@@ -16,14 +17,14 @@ async function sendResetPasswordEmail({ user, url }: { user: { email: string }; 
     },
     body: JSON.stringify({
       from: "Infinite Bloom <onboarding@resend.dev>",
-      to: user.email,
-      subject: "Reset your Infinite Bloom password",
-      text: `Someone requested a password reset for your Infinite Bloom account.\n\nReset your password: ${url}\n\nIf you didn't request this, you can safely ignore this email — your password won't change.`,
+      to,
+      subject,
+      text,
     }),
   })
 
   if (!res.ok) {
-    console.error("Failed to send password reset email:", await res.text().catch(() => res.statusText))
+    console.error(`Failed to send email "${subject}":`, await res.text().catch(() => res.statusText))
   }
 }
 
@@ -36,7 +37,11 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     sendResetPassword: async ({ user, url }) => {
-      await sendResetPasswordEmail({ user, url })
+      await sendAuthEmail({
+        to: user.email,
+        subject: "Reset your Infinite Bloom password",
+        text: `Someone requested a password reset for your Infinite Bloom account.\n\nReset your password: ${url}\n\nIf you didn't request this, you can safely ignore this email — your password won't change.`,
+      })
     },
   },
   socialProviders: {
@@ -45,6 +50,17 @@ export const auth = betterAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     },
   },
+  plugins: [
+    magicLink({
+      sendMagicLink: async ({ email, url }) => {
+        await sendAuthEmail({
+          to: email,
+          subject: "Your Infinite Bloom sign-in link",
+          text: `Click below to sign in to Infinite Bloom — no password needed:\n\n${url}\n\nThis link expires in 5 minutes. If you didn't request this, you can safely ignore this email.`,
+        })
+      },
+    }),
+  ],
 })
 
 export type Session = typeof auth.$Infer.Session

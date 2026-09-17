@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { CornerDownRight, Eye, EyeOff, Loader2 } from "lucide-react"
+import { ArrowRight, CornerDownRight, Eye, EyeOff, Loader2 } from "lucide-react"
 import { authClient } from "@/lib/auth-client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -25,7 +25,17 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
 
-  const busy = loading || googleLoading
+  const [passwordMode, setPasswordMode] = useState(false)
+  const [magicLinkSent, setMagicLinkSent] = useState(false)
+  const [magicLinkLoading, setMagicLinkLoading] = useState(false)
+
+  const busy = loading || googleLoading || magicLinkLoading
+
+  function togglePasswordMode(next: boolean) {
+    setPasswordMode(next)
+    setMagicLinkSent(false)
+    setError("")
+  }
 
   function selectMode(next: "signin" | "signup") {
     setMode(next)
@@ -69,6 +79,27 @@ export default function LoginPage() {
     router.push("/post-login")
   }
 
+  async function sendMagicLink() {
+    setError("")
+    setMagicLinkLoading(true)
+
+    const { error } = await authClient.signIn.magicLink({ email, callbackURL: "/post-login" })
+
+    if (error) {
+      setError(error.message ?? "Could not send the link. Please try again.")
+      setMagicLinkLoading(false)
+      return
+    }
+
+    setMagicLinkSent(true)
+    setMagicLinkLoading(false)
+  }
+
+  function handleMagicLink(e: React.FormEvent) {
+    e.preventDefault()
+    sendMagicLink()
+  }
+
   async function handleGoogleLogin() {
     setError("")
     setGoogleLoading(true)
@@ -102,167 +133,231 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Google */}
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full"
-          onClick={handleGoogleLogin}
-          disabled={busy}
-        >
-          {googleLoading ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <GoogleIcon />
-          )}
-          {googleLoading ? "Connecting…" : "Continue with Google"}
-        </Button>
-
-        {/* Divider */}
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-border" />
-          </div>
-          <div className="relative flex justify-center text-xs">
-            <span className="bg-background px-3 text-muted-foreground">or</span>
-          </div>
-        </div>
-
-        {/* Email / password — Enter submits natively; the arrow button below is the visible trigger */}
-        <form onSubmit={mode === "signup" ? handleSignUp : handleSignIn} className="space-y-4">
-          {mode === "signup" && (
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  autoComplete="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  disabled={busy}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  autoComplete="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  disabled={busy}
-                />
-              </div>
-            </div>
-          )}
-
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              autoComplete="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={busy}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password">Password</Label>
-              {mode === "signin" && (
-                <Link
-                  href="/forgot-password"
-                  className="text-xs text-muted-foreground underline hover:text-foreground transition-colors"
-                >
-                  Forgot password?
-                </Link>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="relative flex-1">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete={mode === "signup" ? "new-password" : "current-password"}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  disabled={busy}
-                  className="pr-10"
-                />
+        {!passwordMode ? (
+          <div className="space-y-4">
+            {magicLinkSent ? (
+              <div className="text-center py-2 space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  Check <span className="text-foreground font-medium">{email}</span> for a sign-in link.
+                  It expires in 5 minutes.
+                </p>
                 <button
                   type="button"
-                  onClick={() => setShowPassword((v) => !v)}
+                  onClick={sendMagicLink}
                   disabled={busy}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                  className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                  className="text-xs underline hover:text-foreground transition-colors disabled:opacity-50"
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {magicLinkLoading ? "Sending…" : "Didn't get it? Resend the link"}
                 </button>
               </div>
+            ) : (
+              <form onSubmit={handleMagicLink} className="flex items-center gap-2">
+                <Input
+                  type="email"
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={busy}
+                  className="flex-1 rounded-full"
+                />
+                <button
+                  type="submit"
+                  disabled={busy}
+                  aria-label="Continue"
+                  className="shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-foreground text-background hover:opacity-90 transition-opacity disabled:opacity-50"
+                >
+                  {magicLinkLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
+                </button>
+              </form>
+            )}
+
+            {error && (
+              <p className="text-sm text-destructive text-center" role="alert">
+                {error}
+              </p>
+            )}
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="bg-background px-3 text-muted-foreground">or</span>
+              </div>
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={handleGoogleLogin}
+              disabled={busy}
+            >
+              {googleLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <GoogleIcon />
+              )}
+              {googleLoading ? "Connecting…" : "Continue with Google"}
+            </Button>
+
+            <button
+              type="button"
+              onClick={() => togglePasswordMode(true)}
+              className="w-full text-center text-xs text-muted-foreground underline hover:text-foreground transition-colors"
+            >
+              Use a password instead
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-8">
+            {/* Email / password — Enter submits natively; the arrow button below is the visible trigger */}
+            <form onSubmit={mode === "signup" ? handleSignUp : handleSignIn} className="space-y-4">
+              {mode === "signup" && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Name</Label>
+                    <Input
+                      id="name"
+                      autoComplete="name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                      disabled={busy}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      autoComplete="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      disabled={busy}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={busy}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Password</Label>
+                  {mode === "signin" && (
+                    <Link
+                      href="/forgot-password"
+                      className="text-xs text-muted-foreground underline hover:text-foreground transition-colors"
+                    >
+                      Forgot password?
+                    </Link>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      disabled={busy}
+                      className="pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      disabled={busy}
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={busy}
+                    aria-label={mode === "signup" ? "Create account" : "Sign in"}
+                    className="shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-foreground text-background hover:opacity-90 transition-opacity disabled:opacity-50"
+                  >
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CornerDownRight className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {mode === "signup" && (
+                <div className="flex items-start gap-2">
+                  <Checkbox
+                    id="marketingConsent"
+                    checked={marketingConsent}
+                    onCheckedChange={(checked) => setMarketingConsent(checked === true)}
+                    disabled={busy}
+                  />
+                  <Label htmlFor="marketingConsent" className="text-xs font-normal text-muted-foreground leading-snug">
+                    Email me with new poems, updates, and blog posts.
+                  </Label>
+                </div>
+              )}
+
+              {error && (
+                <p className="text-sm text-destructive" role="alert">
+                  {error}
+                </p>
+              )}
+            </form>
+
+            {/* Pill toggle */}
+            <div className="flex flex-col gap-2">
               <button
-                type="submit"
-                disabled={busy}
-                aria-label={mode === "signup" ? "Create account" : "Sign in"}
-                className="shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-foreground text-background hover:opacity-90 transition-opacity disabled:opacity-50"
+                type="button"
+                onClick={() => selectMode("signup")}
+                className={`w-full py-2.5 rounded-full text-sm font-medium border transition-colors ${
+                  mode === "signup"
+                    ? "bg-foreground text-background border-foreground"
+                    : "border-border text-muted-foreground hover:text-foreground hover:border-foreground"
+                }`}
               >
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CornerDownRight className="w-4 h-4" />}
+                Create Account
+              </button>
+              <button
+                type="button"
+                onClick={() => selectMode("signin")}
+                className={`w-full py-2.5 rounded-full text-sm font-medium border transition-colors ${
+                  mode === "signin"
+                    ? "bg-foreground text-background border-foreground"
+                    : "border-border text-muted-foreground hover:text-foreground hover:border-foreground"
+                }`}
+              >
+                Log In
               </button>
             </div>
+
+            <button
+              type="button"
+              onClick={() => togglePasswordMode(false)}
+              className="w-full text-center text-xs text-muted-foreground underline hover:text-foreground transition-colors"
+            >
+              Just email me a sign-in link
+            </button>
           </div>
-
-          {mode === "signup" && (
-            <div className="flex items-start gap-2">
-              <Checkbox
-                id="marketingConsent"
-                checked={marketingConsent}
-                onCheckedChange={(checked) => setMarketingConsent(checked === true)}
-                disabled={busy}
-              />
-              <Label htmlFor="marketingConsent" className="text-xs font-normal text-muted-foreground leading-snug">
-                Email me with new poems, updates, and blog posts.
-              </Label>
-            </div>
-          )}
-
-          {error && (
-            <p className="text-sm text-destructive" role="alert">
-              {error}
-            </p>
-          )}
-        </form>
-
-        {/* Pill toggle */}
-        <div className="flex flex-col gap-2">
-          <button
-            type="button"
-            onClick={() => selectMode("signup")}
-            className={`w-full py-2.5 rounded-full text-sm font-medium border transition-colors ${
-              mode === "signup"
-                ? "bg-foreground text-background border-foreground"
-                : "border-border text-muted-foreground hover:text-foreground hover:border-foreground"
-            }`}
-          >
-            Create Account
-          </button>
-          <button
-            type="button"
-            onClick={() => selectMode("signin")}
-            className={`w-full py-2.5 rounded-full text-sm font-medium border transition-colors ${
-              mode === "signin"
-                ? "bg-foreground text-background border-foreground"
-                : "border-border text-muted-foreground hover:text-foreground hover:border-foreground"
-            }`}
-          >
-            Log In
-          </button>
-        </div>
+        )}
 
       </div>
     </main>
