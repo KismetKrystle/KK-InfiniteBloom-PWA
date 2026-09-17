@@ -53,10 +53,14 @@ export default function HeroSection() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  const handleScrollDown = () => {
+    window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })
+  }
+
   return (
     <section
-      className="fixed inset-0 z-[100] overflow-hidden bg-black pointer-events-none"
-      style={{ opacity: fadeOpacity, transition: 'opacity 100ms linear' }}
+      className="fixed inset-0 z-[100] overflow-hidden bg-black"
+      style={{ opacity: fadeOpacity, transition: 'opacity 100ms linear', pointerEvents: fadeOpacity === 0 ? 'none' : 'auto' }}
     >
       {/* Background photo, true color */}
       <div
@@ -96,16 +100,14 @@ export default function HeroSection() {
       {/* Random insight, centered over the banner */}
       <RandomInsightCard />
 
-      {/* Scroll-down hint */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 animate-bounce">
-        <span
-          className="text-xs uppercase tracking-widest text-white/80"
-          style={{ fontFamily: 'Inter, sans-serif' }}
-        >
-          Scroll
-        </span>
+      {/* Scroll-down button */}
+      <button
+        onClick={handleScrollDown}
+        aria-label="Scroll to content"
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center animate-bounce hover:opacity-70 transition-opacity pointer-events-auto"
+      >
         <ChevronDown className="w-6 h-6 text-white/80" />
-      </div>
+      </button>
     </section>
   )
 }

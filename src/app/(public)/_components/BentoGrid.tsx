@@ -128,7 +128,7 @@ function CardLabel({
         className="leading-snug"
         style={{
           fontFamily: 'Inter, sans-serif',
-          fontSize: 'clamp(18px, 1.5vw, 22px)',
+          fontSize: 'clamp(18px, 1.5vw, 32px)',
           fontWeight: 500,
           color: labelColor,
         }}
@@ -146,7 +146,7 @@ function CardLabel({
 
 const headingStyle: React.CSSProperties = {
   fontFamily: 'Inter, sans-serif',
-  fontSize: 'clamp(35px, 11vw, 175px)',
+  fontSize: 'clamp(35px, 11vw, 280px)',
   lineHeight: 1,
   fontWeight: 700,
   color: '#111',
@@ -189,6 +189,7 @@ export default function BentoGrid({ user, hasPurchase, onHover, headingText, hea
   return (
     <>
       <div
+        data-section="bento"
         style={{ opacity: anyOverlayOpen ? 0.3 : 1, transition: 'opacity 220ms ease-out' }}
         className="flex flex-col h-full"
       >
@@ -207,7 +208,8 @@ export default function BentoGrid({ user, hasPurchase, onHover, headingText, hea
             <img
               src="https://res.cloudinary.com/dsoojlgg1/image/upload/v1765783633/Kismet_head_shot_wprdoh.jpg"
               alt="Kismet Krystle"
-              className="absolute top-9 right-4 w-20 h-20 md:w-36 md:h-36 rounded-full object-cover object-top"
+              className="absolute top-9 right-4 rounded-full object-cover object-top"
+              style={{ width: 'clamp(80px, 20vw, 200px)', height: 'clamp(80px, 20vw, 200px)' }}
             />
             <CardLabel label="About" sub="Poet · Author · Speaker · Entrepeneur" animated isHovered={aboutHovered} />
           </BentoCard>
@@ -336,7 +338,7 @@ export default function BentoGrid({ user, hasPurchase, onHover, headingText, hea
               className="text-center"
               style={{
                 fontFamily: 'Inter, sans-serif',
-                fontSize: 'clamp(22px, 3.2vw, 35px)',
+                fontSize: 'clamp(22px, 3.2vw, 52px)',
                 fontWeight: 700,
                 color: 'white',
               }}

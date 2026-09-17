@@ -20,11 +20,13 @@ function splitGraphemes(text: string): string[] {
 
 export default function AnimatedCardTitle({ children, className, isHovered, subtle = false }: AnimatedCardTitleProps) {
   const prefersReduced = useReducedMotion()
-  const [isDesktop, setIsDesktop] = useState(false)
+  const [isDesktop, setIsDesktop] = useState(typeof window !== 'undefined' && window.innerWidth > 768)
+  const [mounted, setMounted] = useState(false)
   const [cycleKey, setCycleKey] = useState(0)
 
   useEffect(() => {
     setIsDesktop(window.innerWidth > 768)
+    setMounted(true)
   }, [])
 
   useEffect(() => {
@@ -33,7 +35,7 @@ export default function AnimatedCardTitle({ children, className, isHovered, subt
     }
   }, [isHovered])
 
-  if (!isDesktop || prefersReduced) {
+  if (!mounted || !isDesktop || prefersReduced) {
     return <span className={className}>{children}</span>
   }
 
