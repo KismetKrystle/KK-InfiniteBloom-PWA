@@ -41,7 +41,7 @@ const products = [
     highlight: false,
     productType: "physical-color",
     purchasable: false,
-    externalLink: "https://a.co/d/02C4lAL5",
+    externalLink: "https://www.amazon.com/dp/B0FSDWL54B",
     icon: BookOpen,
   },
 ]
