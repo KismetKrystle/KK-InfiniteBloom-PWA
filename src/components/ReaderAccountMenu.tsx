@@ -29,21 +29,21 @@ export default function ReaderAccountMenu({ user }: { user: { name: string | nul
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button aria-label="Account" className="p-2 text-[#555] hover:text-[#111] transition-colors">
+          <button aria-label="Account" className="p-2 hover:text-[var(--kk-blue)] transition-colors">
             <User className="w-4 h-4" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-64">
+        <DropdownMenuContent align="end" className="kk w-64 rounded-none border kk-rule">
           <DropdownMenuLabel className="font-normal">
-            <p className="text-[10px] uppercase tracking-widest text-[#aaa]">Signed in as</p>
-            <p className="text-sm text-[#111] truncate">{user.email}</p>
+            <p className="kk-micro text-[var(--kk-muted)]">Signed in as</p>
+            <p className="text-sm truncate">{user.email}</p>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={() => setNoteOpen(true)} className="cursor-pointer">
             <Mail className="w-4 h-4" /> Write to Kismet
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={handleSignOut} className="cursor-pointer text-red-500 focus:text-red-500">
+          <DropdownMenuItem onSelect={handleSignOut} className="cursor-pointer">
             <LogOut className="w-4 h-4" /> Sign out
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -87,10 +87,13 @@ function NoteDialog({ open, onOpenChange, email }: { open: boolean; onOpenChange
         if (!next && status === 'sent') setStatus('idle')
       }}
     >
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Write to Kismet</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="kk max-w-md rounded-none border kk-rule">
+        <DialogHeader className="gap-3 text-left">
+          <span className="kk-micro">The Infinite Bloom / A note</span>
+          <DialogTitle className="kk-display text-[48px] font-black">
+            WRITE TO <span className="kk-blue">KISMET.</span>
+          </DialogTitle>
+          <DialogDescription className="text-sm leading-relaxed text-[var(--kk-muted)]">
             {status === 'sent'
               ? `Sent. Kismet reads every note — any reply will come to ${email}.`
               : `A note straight to Kismet's inbox. Replies come to ${email}.`}
@@ -106,22 +109,22 @@ function NoteDialog({ open, onOpenChange, email }: { open: boolean; onOpenChange
               rows={6}
               placeholder="What's on your mind?"
               aria-label="Your note"
-              className="w-full rounded-lg border border-[#ddd] p-3 text-sm focus:outline-none focus:border-[#111] resize-none"
+              className="kk-input resize-none"
             />
             <div className="flex items-center justify-between gap-3">
-              <span className="text-xs text-[#aaa]">
+              <span className="kk-micro text-[var(--kk-muted)]">
                 {message.length}/{MAX_NOTE_LENGTH}
               </span>
               <button
                 type="submit"
                 disabled={status === 'sending' || !message.trim()}
-                className="px-5 py-2 rounded-full bg-[#111] text-white text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
+                className="kk-solid"
               >
                 {status === 'sending' ? 'Sending…' : 'Send note'}
               </button>
             </div>
             {status === 'error' && (
-              <p className="text-sm text-destructive" role="alert">
+              <p className="text-sm text-red-700" role="alert">
                 {error}
               </p>
             )}

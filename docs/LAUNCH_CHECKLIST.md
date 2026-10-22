@@ -1,6 +1,6 @@
 # Digital book launch checklist
 
-What this sets up: a buyer clicks **Buy Digital Book** on kismetkrystle.com, pays $20 through Stripe, and lands on `read.kismetkrystle.com/welcome`. Their email gets a sign-in link, and one click opens the book. Nobody can read the book without a purchase or a grant from you.
+What this sets up: a buyer clicks **Buy Digital Book** on kismetkrystle.com, pays $20 through Stripe, and lands on `read.kismetkrystle.com/welcome`. A 6-digit code is emailed to them; they type it in on that page and the book opens. They stay signed in for 90 days. Nobody can read the book without a purchase or a grant from you.
 
 Do the parts **in order**. Each one ends with a ✅ check. Don't move on until the check passes.
 
@@ -40,7 +40,7 @@ Open **Neon → your project → SQL Editor**, then:
 
 ## Part 3 — Let the app email anyone (Resend), about 15 minutes plus waiting
 
-Right now emails come from `onboarding@resend.dev`. Resend only delivers that address to **your own** inbox, so buyers would never get their link.
+Right now emails come from `onboarding@resend.dev`. Resend only delivers that address to **your own** inbox, so buyers would never get their code.
 
 1. **Resend → Domains → Add domain** → `kismetkrystle.com`.
 2. Resend lists a few DNS records (TXT/MX, usually on a `send` subdomain). Add each one in **Cloudflare DNS** exactly as shown, all **DNS only (grey cloud)**. Don't touch your existing records.
@@ -55,7 +55,7 @@ Right now emails come from `onboarding@resend.dev`. Resend only delivers that ad
 
 | Name | Value | Why |
 |---|---|---|
-| `BETTER_AUTH_URL` | `https://read.kismetkrystle.com` | Sign-in links are built from this |
+| `BETTER_AUTH_URL` | `https://read.kismetkrystle.com` | The sign-in system checks requests against this address |
 | `NEXT_PUBLIC_APP_URL` | `https://read.kismetkrystle.com` (or delete it) | Must not point at the old Vercel URL |
 | `EMAIL_FROM` | `Kismet Krystle <books@kismetkrystle.com>` | Only **after** Part 3 is verified |
 | `EMAIL_REPLY_TO` | `kismetthepoet@gmail.com` | Where replies to sign-in emails go |
@@ -73,7 +73,7 @@ Both repos have the work on branch `claude/flipbook-purchase-access-3t5bki`.
 
 1. **Preview first (optional but smart):** Vercel builds a preview of the branch automatically. Its URL is in Vercel → Deployments. Cloudflare does the same for KK-Main (Worker → Deployments → preview URL). Click around both.
 2. **Go live:** on GitHub, open each repo → **Pull requests → New** → base `main` ← compare `claude/flipbook-purchase-access-3t5bki` → **Create** → **Merge**. Do the **PWA first, then KK-Main**, so the "Open your book" links work the moment they appear.
-3. ✅ `https://read.kismetkrystle.com` shows **"Open your book"** with an email box.
+3. ✅ `https://read.kismetkrystle.com` shows **OPEN YOUR BOOK.** with an email box.
 4. ✅ On kismetkrystle.com, **Read a few pages** shows two page spreads and a **Get the digital book · $20** button.
 
 ## Part 6 — Stripe
@@ -93,10 +93,10 @@ Both repos have the work on branch `claude/flipbook-purchase-access-3t5bki`.
 ## Part 7 — Test it end to end with a real purchase
 
 1. In a **private window**, go to kismetkrystle.com → **Buy Digital Book** → pay $20 with your own card, using an email you can check.
-2. ✅ You land on **"Welcome to The Infinite Bloom"**, and an email arrives from `books@kismetkrystle.com`. Check spam the first time.
-3. ✅ Clicking the link opens the book. Try the **Reflections** bubble and **account menu → Write to Kismet**, and check that the note reaches your Gmail.
+2. ✅ You land on **WELCOME TO THE BLOOM.**, and an email with a 6-digit code arrives from `books@kismetkrystle.com`. Check spam the first time.
+3. ✅ Typing the code opens the book. Try the **Reflections** bubble and **account menu → Write to Kismet**, and check that the note reaches your Gmail.
 4. **Refund yourself** in Stripe → Payments → that payment → Refund.
-5. ✅ Within a minute or two, refresh the reader: it should say **"We couldn't find your copy."** That proves refunds take access away.
+5. ✅ Within a minute or two, refresh the reader: it should say **NO COPY FOUND.** That proves refunds take access away.
 
 Stripe keeps its processing fee (about $0.90) on a refund. That's the cost of a real test.
 
@@ -118,12 +118,12 @@ Buy Digital Book (KK-Main)
   → Stripe redirects to /welcome?session_id=…
        ├─ the server asks Stripe: paid? which price? which email?
        ├─ adds the email to access_grants (once per purchase)
-       └─ emails that address a sign-in link (expires in 15 min)
-  → buyer clicks the link → signed in → /flipbook → reads
+       └─ emails that address a 6-digit code (expires in 15 min)
+  → buyer types the code → signed in for 90 days → /flipbook → reads
 Stripe webhook does the same grant in the background (backup),
 and on refund sets revoked_at so access stops.
 ```
 
-- **Coming back later or on a new device:** read.kismetkrystle.com → enter email → click link. No passwords and no device limit.
+- **Coming back later or on a new device:** read.kismetkrystle.com → enter email → type the code. No passwords and no device limit. The code is typed on the device they're using, so it also works inside an installed home-screen app.
 - **Someone bought with a different email:** add their real email at `/admin/access-grants`.
 - **Turned off for now:** the free time-limited preview, the device limit, password and Google sign-in, the audio page (`/audio` redirects to the book), and the old bento homepage (`/` redirects to the book). The code for audio and the homepage is still in the repo.

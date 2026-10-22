@@ -55,28 +55,27 @@ export default function FlipbookPage({ user, bookSlug }: FlipbookPageProps) {
   }, [])
 
   return (
-    <div className="h-dvh flex flex-col bg-white">
+    <div className="kk h-dvh flex flex-col">
       {!isFullScreen && (
-        <header className="h-12 shrink-0 flex items-center justify-between gap-3 px-4 border-b border-[#e5e2da] bg-[#f5f3ed]">
+        <header className="shrink-0 flex items-center gap-4 min-h-[56px] px-4 sm:px-7 border-b kk-rule">
           <a
             href="https://www.kismetkrystle.com"
-            className="text-xs text-[#555] hover:text-[#111] transition-colors whitespace-nowrap"
+            className="text-[17px] sm:text-[20px] font-black tracking-[-1px] whitespace-nowrap"
           >
-            ← <span className="hidden sm:inline">kismetkrystle.com</span>
-            <span className="sm:hidden">Home</span>
+            KISMET / KRYSTLE
           </a>
-          <span className="text-[10px] tracking-[0.25em] text-[#555] truncate">THE INFINITE BLOOM</span>
-          <div className="flex items-center gap-1">
+          <span className="kk-micro hidden md:inline border-l kk-rule pl-4">The Infinite Bloom / Reader</span>
+          <div className="ml-auto flex items-center gap-1">
             {/* Mounted for the page's lifetime so it catches the one-time
                 beforeinstallprompt event; renders nothing unless installable. */}
-            <div className="mr-1">
+            <div className="mr-2">
               <PWAInstallButton />
             </div>
             <button
               onClick={() => setIsFullScreen(true)}
               aria-label="Full screen"
               title="Full screen"
-              className="p-2 text-[#555] hover:text-[#111] transition-colors"
+              className="p-2 hover:text-[var(--kk-blue)] transition-colors"
             >
               <Maximize className="w-4 h-4" />
             </button>
@@ -85,7 +84,7 @@ export default function FlipbookPage({ user, bookSlug }: FlipbookPageProps) {
         </header>
       )}
 
-      <div className={isFullScreen ? 'fixed inset-0 z-50 bg-black' : 'relative flex-1 min-h-0'}>
+      <div className={isFullScreen ? 'fixed inset-0 z-50 bg-black' : 'relative flex-1 min-h-0 bg-white'}>
         {isFullScreen && (
           <button
             onClick={() => setIsFullScreen(false)}
@@ -101,6 +100,8 @@ export default function FlipbookPage({ user, bookSlug }: FlipbookPageProps) {
           src={`/flipbook-content/${bookSlug}/index.html`}
           className="w-full h-full border-0"
           title="The Infinite Bloom"
+          // The book's narration plays inside the reader.
+          allow="autoplay; fullscreen"
           allowFullScreen
           onLoad={() => {
             // Served same-origin through our own proxy route, so we can
@@ -123,11 +124,11 @@ export default function FlipbookPage({ user, bookSlug }: FlipbookPageProps) {
           onClick={() => setReflectionsOpen(true)}
           aria-label={reflectionCount ? `Reflections (${reflectionCount})` : 'Reflections'}
           title="Reflections"
-          className="fixed bottom-5 right-5 z-40 w-12 h-12 rounded-full bg-[#111] text-white shadow-lg flex items-center justify-center hover:scale-105 transition-transform"
+          className="fixed bottom-5 right-5 z-40 w-12 h-12 rounded-full bg-[var(--kk-ink)] text-[var(--kk-paper)] shadow-lg flex items-center justify-center hover:bg-[var(--kk-blue)] transition-colors"
         >
           <MessageCircle className="w-5 h-5" />
           {reflectionCount ? (
-            <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-[#2180c6] text-[10px] font-medium flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-[var(--kk-blue)] text-white font-mono text-[10px] flex items-center justify-center">
               {reflectionCount > 99 ? '99+' : reflectionCount}
             </span>
           ) : null}
@@ -135,12 +136,17 @@ export default function FlipbookPage({ user, bookSlug }: FlipbookPageProps) {
       )}
 
       <Sheet open={reflectionsOpen} onOpenChange={setReflectionsOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
-          <SheetHeader className="border-b border-[#eee]">
-            <SheetTitle>Reflections</SheetTitle>
-            <SheetDescription>What stayed with other readers — and a place to leave yours.</SheetDescription>
+        <SheetContent side="right" className="kk w-full sm:max-w-md overflow-y-auto gap-0 border-l kk-rule">
+          <SheetHeader className="px-6 pt-6 pb-5 border-b kk-rule gap-3">
+            <span className="kk-micro">The Infinite Bloom / Readers</span>
+            <SheetTitle className="kk-display text-[56px] font-black">
+              REFLEC<span className="kk-blue">TIONS.</span>
+            </SheetTitle>
+            <SheetDescription className="kk-subhead text-[17px] text-[var(--kk-muted)]">
+              What stayed with other readers — and a place to leave yours.
+            </SheetDescription>
           </SheetHeader>
-          <div className="px-4 pb-6 space-y-6">
+          <div className="px-6 py-6">
             <ExperienceShareDialog userEmail={user.email} userName={user.name} />
             <CommentSection context="flipbook" prompt="What stayed with you?" user={user} />
           </div>

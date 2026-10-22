@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { authClient } from '@/lib/auth-client'
 
-export default function SignOutButton({ className }: { className?: string }) {
+export default function SignOutButton() {
   const router = useRouter()
 
   async function signOut() {
@@ -12,11 +12,7 @@ export default function SignOutButton({ className }: { className?: string }) {
   }
 
   return (
-    <button
-      type="button"
-      onClick={signOut}
-      className={className ?? 'px-5 py-2.5 rounded-full border border-[#111] text-sm text-[#111] hover:bg-[#111] hover:text-white transition-colors'}
-    >
+    <button type="button" onClick={signOut} className="kk-outline">
       Sign out
     </button>
   )

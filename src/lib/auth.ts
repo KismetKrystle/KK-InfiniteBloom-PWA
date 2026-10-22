@@ -1,5 +1,5 @@
 import { betterAuth } from "better-auth"
-import { magicLink } from "better-auth/plugins"
+import { emailOTP } from "better-auth/plugins"
 import { Pool } from "pg"
 import { sendEmail } from "@/lib/email"
 
@@ -9,16 +9,26 @@ export const auth = betterAuth({
   database: new Pool({
     connectionString: process.env.DATABASE_URL,
   }),
+  // Readers stay signed in for 90 days; each visit after the first day
+  // pushes that out again, so regular readers effectively never sign in twice.
+  session: {
+    expiresIn: 60 * 60 * 24 * 90,
+    updateAge: 60 * 60 * 24,
+  },
   plugins: [
-    // Magic link is the only way in: proving the inbox is what lets an
-    // email-matched access grant (e.g. a Payment Link purchase) unlock the book.
-    magicLink({
+    // A 6-digit emailed code is the only way in. It's typed into the same
+    // browser (or installed app) the reader is using — unlike a link, which
+    // opens wherever the mail app decides. Proving the inbox is also what
+    // lets an email-matched access grant (a Payment Link purchase) count.
+    emailOTP({
+      otpLength: 6,
       expiresIn: 60 * 15,
-      sendMagicLink: async ({ email, url }) => {
+      sendVerificationOTP: async ({ email, otp, type }) => {
+        if (type !== "sign-in") return
         await sendEmail({
           to: email,
-          subject: "Open your copy of The Infinite Bloom",
-          text: `Click below to open The Infinite Bloom — no password needed:\n\n${url}\n\nThis link works once and expires in 15 minutes. You can always get a fresh one at read.kismetkrystle.com with this email.\n\nIf you didn't request this, you can safely ignore this email.`,
+          subject: `${otp} is your code for The Infinite Bloom`,
+          text: `Your code to open The Infinite Bloom:\n\n${otp}\n\nEnter it on the page where you asked for it. It expires in 15 minutes.\n\nYou can always get a new code at read.kismetkrystle.com with this email. If you didn't ask for one, you can ignore this email.`,
         })
       },
     }),

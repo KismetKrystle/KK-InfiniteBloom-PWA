@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Button } from './ui/button'
 import { Download, X } from 'lucide-react'
 
 interface BeforeInstallPromptEvent extends Event {
@@ -59,19 +58,14 @@ export default function PWAInstallButton() {
   return (
     <>
       {!isInstalled && installPrompt && (
-        <Button
-          onClick={handleInstall}
-          variant="outline"
-          size="sm"
-          className="gap-2 border-[#38bdf8] text-[#38bdf8] hover:bg-[#38bdf8]/10 hover:text-[#38bdf8]"
-        >
-          <Download className="w-4 h-4" />
+        <button onClick={handleInstall} className="kk-outline whitespace-nowrap" style={{ padding: "8px 12px", fontSize: 12 }}>
+          <Download className="w-3.5 h-3.5" />
           Add to Home Screen
-        </Button>
+        </button>
       )}
 
       {showDesktopTip && (
-        <div className="fixed bottom-6 right-6 z-50 max-w-xs bg-white rounded-2xl shadow-2xl border border-[#d4d4d4] p-5">
+        <div className="fixed bottom-6 right-6 z-50 max-w-xs bg-[#f5f3ed] shadow-2xl border border-[#aaa79e] p-5">
           <button
             onClick={() => setShowDesktopTip(false)}
             aria-label="Dismiss"

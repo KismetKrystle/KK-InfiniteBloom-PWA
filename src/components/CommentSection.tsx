@@ -128,9 +128,9 @@ export default function CommentSection({ context, prompt = 'Tell us what you tho
   }
 
   return (
-    <div className="mt-8 pt-6 border-t border-[#d4d4d4]">
-      <h2 className="text-sm font-semibold text-[#111] mb-1">Comments</h2>
-      <p className="text-sm text-[#666] mb-3">{prompt}</p>
+    <div className="mt-6 pt-6 border-t border-[#aaa79e]">
+      <h2 className="font-mono text-[10px] tracking-[.4px] uppercase text-[#111] mb-2">Comments</h2>
+      <p className="font-serif-kk text-lg italic text-[#121212] mb-3">{prompt}</p>
 
       {user ? (
         <form onSubmit={handleSubmit} className="space-y-3 mb-6">
@@ -143,14 +143,14 @@ export default function CommentSection({ context, prompt = 'Tell us what you tho
             placeholder="Share your thoughts…"
             rows={4}
             maxLength={2000}
-            className="w-full px-4 py-3 rounded-xl border border-[#d4d4d4] text-sm text-[#111] outline-none focus:border-[#F27D26] transition-colors resize-none"
+            className="w-full px-4 py-3 rounded-none border border-[#aaa79e] text-sm text-[#111] outline-none focus:border-[#2180c6] transition-colors resize-none"
           />
           <div className="flex items-center gap-3">
             <button
               type="submit"
               disabled={!content.trim() || status === 'submitting'}
-              className="px-5 py-2 rounded-xl text-white font-medium text-sm transition-opacity hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
-              style={{ backgroundColor: '#F27D26' }}
+              className="px-5 py-2 rounded-none text-white font-medium text-sm transition-opacity hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{ backgroundColor: '#121212' }}
             >
               {status === 'submitting' ? 'Sending…' : 'Submit'}
             </button>
@@ -159,14 +159,14 @@ export default function CommentSection({ context, prompt = 'Tell us what you tho
         </form>
       ) : (
         <p className="text-sm text-[#666] mb-6">
-          <a href="/login" className="text-[#F27D26] hover:underline">Sign in</a> to leave a comment.
+          <a href="/login" className="text-[#2180c6] hover:underline">Sign in</a> to leave a comment.
         </p>
       )}
 
       {comments.length > 0 && (
         <div className="space-y-3">
           {comments.map((c) => (
-            <div key={c.id} className="rounded-xl border border-[#d4d4d4] p-3">
+            <div key={c.id} className="rounded-none border border-[#aaa79e] p-3">
               <div className="flex items-start gap-3">
                 {c.author_image ? (
                   <img
@@ -175,7 +175,7 @@ export default function CommentSection({ context, prompt = 'Tell us what you tho
                     className="w-8 h-8 rounded-full object-cover shrink-0"
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-[#F27D26] text-black text-xs font-semibold flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-[#2180c6] text-black text-xs font-semibold flex items-center justify-center shrink-0">
                     {c.author_name?.charAt(0).toUpperCase() ?? '?'}
                   </div>
                 )}
@@ -190,20 +190,20 @@ export default function CommentSection({ context, prompt = 'Tell us what you tho
                         onChange={(e) => setEditContent(e.target.value)}
                         rows={3}
                         maxLength={2000}
-                        className="w-full px-3 py-2 rounded-lg border border-[#d4d4d4] text-sm text-[#111] outline-none focus:border-[#F27D26] transition-colors resize-none"
+                        className="w-full px-3 py-2 rounded-none border border-[#aaa79e] text-sm text-[#111] outline-none focus:border-[#2180c6] transition-colors resize-none"
                       />
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => saveEdit(c.id)}
                           disabled={!editContent.trim() || editStatus === 'submitting'}
-                          className="px-3 py-1.5 rounded-lg text-white text-xs font-medium transition-opacity hover:opacity-90 disabled:opacity-40"
-                          style={{ backgroundColor: '#F27D26' }}
+                          className="px-3 py-1.5 rounded-none text-white text-xs font-medium transition-opacity hover:opacity-90 disabled:opacity-40"
+                          style={{ backgroundColor: '#121212' }}
                         >
                           {editStatus === 'submitting' ? 'Saving…' : 'Save'}
                         </button>
                         <button
                           onClick={cancelEdit}
-                          className="px-3 py-1.5 rounded-lg border border-[#d4d4d4] text-[#666] text-xs font-medium hover:border-[#aaa] transition-colors"
+                          className="px-3 py-1.5 rounded-none border border-[#aaa79e] text-[#666] text-xs font-medium hover:border-[#aaa] transition-colors"
                         >
                           Cancel
                         </button>
@@ -221,9 +221,9 @@ export default function CommentSection({ context, prompt = 'Tell us what you tho
                     >
                       <Heart
                         className="w-3.5 h-3.5"
-                        style={{ color: c.liked_by_me ? '#F27D26' : '#aaa', fill: c.liked_by_me ? '#F27D26' : 'none' }}
+                        style={{ color: c.liked_by_me ? '#2180c6' : '#aaa', fill: c.liked_by_me ? '#2180c6' : 'none' }}
                       />
-                      <span style={{ color: c.liked_by_me ? '#F27D26' : '#aaa' }}>
+                      <span style={{ color: c.liked_by_me ? '#2180c6' : '#aaa' }}>
                         {c.like_count > 0 ? c.like_count : 'Like'}
                       </span>
                     </button>

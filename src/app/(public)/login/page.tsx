@@ -1,5 +1,5 @@
-import ReaderShell from "@/components/ReaderShell"
-import MagicLinkForm from "@/components/MagicLinkForm"
+import ReaderShell, { ShellHeading } from "@/components/ReaderShell"
+import CodeSignInForm from "@/components/CodeSignInForm"
 
 // Only ever pass a same-site relative path through — an unvalidated value
 // would otherwise be an open-redirect vector (e.g. //evil.com).
@@ -21,14 +21,12 @@ export default async function LoginPage({
   const { callbackUrl } = await searchParams
 
   return (
-    <ReaderShell>
-      <div className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight text-[#111]">Sign in</h1>
-        <p className="text-sm leading-relaxed text-[#555]">
-          Enter your email and we&apos;ll send you a link — no password needed.
-        </p>
-      </div>
-      <MagicLinkForm next={safeNext(callbackUrl)} />
+    <ReaderShell label="Sign in">
+      <ShellHeading
+        title={<>SIGN<br /><span className="kk-blue">IN.</span></>}
+        body="Enter your email and we'll send you a 6-digit code — no password needed."
+      />
+      <CodeSignInForm next={safeNext(callbackUrl)} />
     </ReaderShell>
   )
 }

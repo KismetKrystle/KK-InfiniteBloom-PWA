@@ -3,9 +3,10 @@ import { auth } from "@/lib/auth"
 import { resolveBook, hasPurchased } from "@/lib/flipbook-access"
 import { BOOK_PAYMENT_LINK } from "@/lib/book-purchase"
 import FlipbookPage from "@/components/FlipbookPage"
-import ReaderShell from "@/components/ReaderShell"
-import MagicLinkForm from "@/components/MagicLinkForm"
+import ReaderShell, { ShellHeading } from "@/components/ReaderShell"
+import CodeSignInForm from "@/components/CodeSignInForm"
 import SignOutButton from "@/components/SignOutButton"
+import KKArrow from "@/components/KKArrow"
 
 // Only one active book/tenant today — resolve this from the route/tenant
 // context instead of a constant once a second book exists.
@@ -16,12 +17,13 @@ export default async function FlipbookRoute() {
 
   if (!session) {
     return (
-      <ReaderShell>
-        <Heading
-          title="Open your book"
-          body="Enter the email you used at checkout and we'll send you a link — no password needed."
+      <ReaderShell label="Reader">
+        <ShellHeading
+          eyebrow="Your copy"
+          title={<>OPEN YOUR<br /><span className="kk-blue">BOOK.</span></>}
+          body="Enter the email you used at checkout. We'll send you a 6-digit code — no password needed."
         />
-        <MagicLinkForm />
+        <CodeSignInForm />
         <BuyLink />
       </ReaderShell>
     )
@@ -32,10 +34,17 @@ export default async function FlipbookRoute() {
 
   if (!purchased) {
     return (
-      <ReaderShell>
-        <Heading
-          title="We couldn't find your copy"
-          body={`There's no purchase for ${session.user.email} yet. If you just bought it, give it a minute and refresh. Used a different email at checkout? Sign out and use that one.`}
+      <ReaderShell label="Reader">
+        <ShellHeading
+          eyebrow="Signed in"
+          title={<>NO COPY<br /><span className="kk-blue">FOUND.</span></>}
+          body={
+            <>
+              There&apos;s no purchase for <span className="text-[var(--kk-ink)]">{session.user.email}</span> yet. If
+              you just bought it, give it a minute and refresh. Used a different email at checkout? Sign out and use
+              that one.
+            </>
+          }
         />
         <SignOutButton />
         <BuyLink />
@@ -47,22 +56,13 @@ export default async function FlipbookRoute() {
   return <FlipbookPage user={user} bookSlug={BOOK_SLUG} />
 }
 
-function Heading({ title, body }: { title: string; body: string }) {
-  return (
-    <div className="space-y-2">
-      <h1 className="text-2xl font-semibold tracking-tight text-[#111]">{title}</h1>
-      <p className="text-sm leading-relaxed text-[#555]">{body}</p>
-    </div>
-  )
-}
-
 function BuyLink() {
   return (
-    <p className="text-xs text-[#777]">
-      Don&apos;t have the book yet?{" "}
-      <a href={BOOK_PAYMENT_LINK} className="text-[#111] underline">
-        Get the digital edition — $20
+    <div className="border-t kk-rule pt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
+      <span className="text-sm text-[var(--kk-muted)]">Don&apos;t have the book yet?</span>
+      <a href={BOOK_PAYMENT_LINK} className="kk-text-link">
+        Get the digital book · $20 <KKArrow />
       </a>
-    </p>
+    </div>
   )
 }

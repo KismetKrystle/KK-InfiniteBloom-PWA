@@ -2,9 +2,10 @@ import Link from "next/link"
 import { headers } from "next/headers"
 import { auth } from "@/lib/auth"
 import { grantAccessFromCheckout } from "@/lib/book-purchase"
-import ReaderShell from "@/components/ReaderShell"
-import MagicLinkForm from "@/components/MagicLinkForm"
-import WelcomeLinkSender from "@/components/WelcomeLinkSender"
+import ReaderShell, { ShellHeading } from "@/components/ReaderShell"
+import CodeSignInForm from "@/components/CodeSignInForm"
+import WelcomeCodeSignIn from "@/components/WelcomeCodeSignIn"
+import KKArrow from "@/components/KKArrow"
 
 // Stripe's Payment Link redirects here with ?session_id={CHECKOUT_SESSION_ID}.
 // Granting here as well as in the webhook means the buyer never waits on
@@ -27,15 +28,13 @@ export default async function WelcomePage({
 
   if (!grant || !checkoutSessionId) {
     return (
-      <ReaderShell>
-        <div className="space-y-2">
-          <h1 className="text-2xl font-semibold tracking-tight text-[#111]">Thank you!</h1>
-          <p className="text-sm leading-relaxed text-[#555]">
-            We couldn&apos;t confirm your payment on this page, but it may still be processing. Enter the email you
-            used at checkout and we&apos;ll send you a link to your book.
-          </p>
-        </div>
-        <MagicLinkForm />
+      <ReaderShell label="Welcome">
+        <ShellHeading
+          eyebrow="Thank you"
+          title={<>ALMOST<br /><span className="kk-blue">THERE.</span></>}
+          body="We couldn't confirm your payment on this page — it may still be processing. Enter the email you used at checkout and we'll send you a code to open your book."
+        />
+        <CodeSignInForm />
       </ReaderShell>
     )
   }
@@ -44,21 +43,22 @@ export default async function WelcomePage({
   const alreadySignedIn = session?.user.email.toLowerCase() === grant.email
 
   return (
-    <ReaderShell>
-      <div className="space-y-2">
-        <p className="text-[10px] tracking-[0.25em] text-[#777]">PAYMENT RECEIVED</p>
-        <h1 className="text-2xl font-semibold tracking-tight text-[#111]">Welcome to The Infinite Bloom</h1>
-      </div>
+    <ReaderShell label="Welcome">
+      <ShellHeading
+        eyebrow="Payment received · thank you"
+        title={<>WELCOME TO<br /><span className="kk-blue">THE BLOOM.</span></>}
+        body={alreadySignedIn ? undefined : "Your copy is ready. Enter the code we just emailed you to start reading — on this device, no password needed."}
+      />
       {alreadySignedIn ? (
-        <Link
-          href="/flipbook"
-          className="inline-block px-6 py-3 rounded-full bg-[#111] text-white text-sm hover:opacity-90 transition-opacity"
-        >
-          Open your book
+        <Link href="/flipbook" className="kk-solid">
+          Open your book <KKArrow />
         </Link>
       ) : (
-        <WelcomeLinkSender checkoutSessionId={checkoutSessionId} email={grant.email} />
+        <WelcomeCodeSignIn checkoutSessionId={checkoutSessionId} email={grant.email} />
       )}
+      <p className="text-xs leading-relaxed text-[var(--kk-muted)] border-t kk-rule pt-5">
+        Coming back later or on another device? Go to read.kismetkrystle.com and sign in with this same email.
+      </p>
     </ReaderShell>
   )
 }

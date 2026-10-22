@@ -81,3 +81,56 @@ html {
   from { transform: translateX(-50%); }
   to   { transform: translateX(0); }
 }
+
+/* ============================================================
+   Kismet Krystle site styles — mirrors www.kismetkrystle.com
+   (KK-Main public/style.css) so the reader feels like the same
+   site: cream paper, ink, one blue, monospace labels, square
+   buttons and the Display headline face.
+   ============================================================ */
+@font-face { font-family: KKDisplay; src: url('/fonts/display.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: KKHero; src: url('/fonts/anton.ttf') format('truetype'); font-display: swap; }
+
+.kk {
+  --kk-paper: #f5f3ed;
+  --kk-ink: #121212;
+  --kk-blue: #2180c6;
+  --kk-rule: #aaa79e;
+  --kk-muted: #555;
+  background: var(--kk-paper);
+  color: var(--kk-ink);
+  font-family: Arial, Helvetica, sans-serif;
+}
+.kk-micro { font-family: monospace; font-size: 10px; letter-spacing: .4px; text-transform: uppercase; }
+.kk-display { font-family: KKDisplay, Impact, 'Arial Narrow', sans-serif; font-weight: 900; letter-spacing: -.035em; line-height: .93; }
+.kk-subhead { font-family: Georgia, serif; font-style: italic; font-weight: normal; }
+.kk-blue { color: var(--kk-blue); }
+.kk-rule { border-color: var(--kk-rule); }
+.kk-solid {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5em;
+  border: 1px solid var(--kk-ink); background: var(--kk-ink); color: var(--kk-paper);
+  font-size: 13px; padding: 15px 20px; border-radius: 0; cursor: pointer;
+  transition: background-color .15s, border-color .15s;
+}
+.kk-solid:hover:not(:disabled) { background: var(--kk-blue); border-color: var(--kk-blue); }
+.kk-solid:disabled { opacity: .5; cursor: default; }
+.kk-outline {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5em;
+  border: 1px solid var(--kk-ink); background: transparent; color: var(--kk-ink);
+  font-size: 13px; padding: 14px 20px; border-radius: 0; cursor: pointer;
+  transition: background-color .15s, color .15s;
+}
+.kk-outline:hover { background: var(--kk-ink); color: var(--kk-paper); }
+.kk-text-link {
+  display: inline-block; font-size: 13px; border: 0; border-bottom: 1px solid var(--kk-muted);
+  padding: 0 0 4px; background: none; color: inherit; cursor: pointer;
+}
+.kk-text-link:hover { color: var(--kk-blue); border-color: var(--kk-blue); }
+.kk-input {
+  width: 100%; min-width: 0; border: 1px solid var(--kk-rule); border-radius: 0;
+  padding: 13px 12px; background: #fff; font: 14px Arial, sans-serif; color: var(--kk-ink);
+}
+.kk-input:focus { outline: 2px solid var(--kk-blue); outline-offset: 2px; }
+.kk-code { font-family: monospace; font-size: 22px; letter-spacing: .5em; text-align: center; padding-left: calc(12px + .5em); }
+.kk :focus-visible { outline: 3px solid var(--kk-blue); outline-offset: 4px; }
+.font-serif-kk { font-family: Georgia, serif; }
