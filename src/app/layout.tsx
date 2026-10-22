@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import "./globals.css"
 
-const SITE_URL = "https://www.kismetkrystle.com"
+const SITE_URL = "https://read.kismetkrystle.com"
 const OG_IMAGE = "https://res.cloudinary.com/dsoojlgg1/image/upload/v1779156322/book_at_angle-v2_bg-removed_aqt9d7.png"
 
 export const metadata: Metadata = {
@@ -15,8 +15,10 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "default",
   },
+  // The public page for the book is www.kismetkrystle.com; this reader is
+  // buyers-only, so keep it out of search results.
   alternates: {
-    canonical: SITE_URL,
+    canonical: "https://www.kismetkrystle.com",
   },
   openGraph: {
     title: "Kismet Krystle | Poet & Speaker | Infinite Bloom Author",
@@ -40,8 +42,8 @@ export const metadata: Metadata = {
     images: [OG_IMAGE],
   },
   robots: {
-    index: true,
-    follow: true,
+    index: false,
+    follow: false,
   },
   authors: [{ name: "Kismet Krystle" }],
   creator: "Kismet Krystle",

@@ -1,4 +1,5 @@
 import { headers } from 'next/headers'
+import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
 import { getAudioAccess } from '@/lib/audio-access'
 import SharedNavbar from '@/components/SharedNavbar'
@@ -9,7 +10,13 @@ import AudioSignupGate from '@/components/AudioSignupGate'
 import BookClaimForm from '@/components/BookClaimForm'
 import AudioWelcomeModal from '@/components/AudioWelcomeModal'
 
+// Audio is parked for now — the reader only sells the book. Delete this
+// redirect to bring the page back (its sign-in gate still offers password
+// and Google sign-in, which are turned off, so update it first).
+const AUDIO_ENABLED = false
+
 export default async function AudioPage() {
+  if (!AUDIO_ENABLED) redirect('/flipbook')
   const session = await auth.api.getSession({ headers: await headers() })
   const { purchased, claimed, granted, hasAccess } = await getAudioAccess(session?.user?.id, session?.user?.email)
 

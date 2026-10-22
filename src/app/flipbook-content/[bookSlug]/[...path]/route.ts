@@ -3,15 +3,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { GetObjectCommand } from "@aws-sdk/client-s3"
 import { auth } from "@/lib/auth"
 import { r2Client, R2_BUCKET } from "@/lib/r2"
-import {
-  PREVIEW_DURATION_S,
-  PREVIEW_COOKIE_MAX_AGE_S,
-  previewCookieName,
-  resolveBook,
-  hasPurchased,
-  verifyPreviewCookie,
-  makePreviewCookie,
-} from "@/lib/flipbook-access"
+import { resolveBook, hasPurchased } from "@/lib/flipbook-access"
 
 function errorResponse(error: string, status: number): NextResponse {
   return NextResponse.json({ error }, { status, headers: { "Cache-Control": "no-store" } })
@@ -40,35 +32,17 @@ export async function GET(
   // The FlipHTML5 reader's own Share button hands out this raw entry-point
   // URL (it only knows its own iframe document, not the page embedding it).
   // A direct top-level open of that link should land on the real page —
-  // same-origin, so cookies/preview state carry over — not a bare JSON error.
+  // same-origin, so the sign-in cookie carries over — not a bare JSON error.
   // Sec-Fetch-Dest distinguishes that from our own page's legitimate iframe embed.
   const isEntryPoint = path.length === 1 && path[0] === "index.html"
   if (isEntryPoint && request.headers.get("sec-fetch-dest") === "document") {
     return NextResponse.redirect(new URL("/flipbook", request.url))
   }
 
-  const purchased = await hasPurchased(session?.user?.id, session?.user?.email, book.id)
-  const signedIn = Boolean(session?.user?.id)
-  const cookieName = previewCookieName(bookSlug, signedIn)
-  let cookieToSet: string | null = null
-
-  if (!purchased) {
-    const existing = request.cookies.get(cookieName)?.value
-    const verified = existing ? verifyPreviewCookie(existing, book.id) : null
-    const usedS = verified?.usedS ?? 0
-
-    // usedS only ever grows via /api/flipbook/preview-heartbeat (paused
-    // while the tab isn't visible or the reader is closed) — this route
-    // just checks the running total and, on a visitor's very first
-    // request, plants the cookie at 0 so later requests have something to
-    // read and increment.
-    if (usedS >= PREVIEW_DURATION_S) {
-      return errorResponse("Preview expired", 403)
-    }
-
-    if (!verified) {
-      cookieToSet = makePreviewCookie(book.id, 0)
-    }
+  // Buyers only — there's no free preview. The sample lives on
+  // kismetkrystle.com as static images, so nothing here is ever public.
+  if (!(await hasPurchased(session?.user, book.id))) {
+    return errorResponse("Purchase required", 403)
   }
 
   const key = `${book.r2_prefix}/${path.join("/")}`
@@ -88,18 +62,13 @@ export async function GET(
     return errorResponse("Not found", 404)
   }
 
-  // Purchased viewers get a much longer cache on the static sub-assets
-  // (images/JS/CSS never change per book) so reopening the flipbook hits
-  // the browser cache instead of re-running the whole chain per file. The
-  // entry HTML and anything served to a time-limited preview stay
-  // uncached/short-lived so access can't outlive its window.
-  const cacheControl = !purchased
-    ? "private, no-store"
-    : isEntryPoint
-      ? "private, max-age=300"
-      : "private, max-age=604800, immutable"
+  // Static sub-assets (images/JS/CSS never change per book) get a long
+  // private cache so reopening the flipbook hits the browser cache instead
+  // of re-running the whole chain per file. The entry HTML stays
+  // short-lived so a revoked grant can't outlive it for long.
+  const cacheControl = isEntryPoint ? "private, max-age=300" : "private, max-age=604800, immutable"
 
-  const response = new NextResponse(Buffer.from(bytes), {
+  return new NextResponse(Buffer.from(bytes), {
     status: 200,
     headers: {
       "Content-Type": object.ContentType ?? "application/octet-stream",
@@ -107,18 +76,4 @@ export async function GET(
       "Cache-Control": cacheControl,
     },
   })
-
-  if (cookieToSet) {
-    response.cookies.set(cookieName, cookieToSet, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      // "/" (not scoped to /flipbook-content) so the heartbeat and
-      // status endpoints under /api/flipbook can read and update it too.
-      path: "/",
-      maxAge: PREVIEW_COOKIE_MAX_AGE_S,
-    })
-  }
-
-  return response
 }

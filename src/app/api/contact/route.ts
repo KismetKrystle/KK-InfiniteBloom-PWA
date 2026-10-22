@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { sendEmail, NOTES_TO } from "@/lib/email"
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null)
@@ -10,32 +11,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
   }
 
-  const apiKey = process.env.RESEND_API_KEY
-  if (!apiKey) {
-    return NextResponse.json({ error: "Mail service not configured" }, { status: 500 })
-  }
-
   const inquiryList =
     Array.isArray(inquiries) && inquiries.length > 0
       ? inquiries.join(", ")
       : "Not specified"
 
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: "Infinite Bloom <onboarding@resend.dev>",
-      to: "kismetthepoet@gmail.com",
-      reply_to: email,
-      subject: `New inquiry: ${inquiryList}`,
-      text: `Name: ${name}\nEmail: ${email}\nInquiry: ${inquiryList}\n\n${message}`,
-    }),
+  const sent = await sendEmail({
+    to: NOTES_TO,
+    replyTo: email,
+    subject: `New inquiry: ${inquiryList}`,
+    text: `Name: ${name}\nEmail: ${email}\nInquiry: ${inquiryList}\n\n${message}`,
   })
 
-  if (!res.ok) {
+  if (!sent) {
     return NextResponse.json({ error: "Failed to send message" }, { status: 502 })
   }
 

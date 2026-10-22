@@ -3,12 +3,10 @@
 // outside the book reader itself.
 //
 // The server (src/app/flipbook-content/[bookSlug]/[...path]/route.ts) is the
-// single source of truth for entitlement: purchased responses carry a long
-// Cache-Control, everything served to a free preview / anonymous visitor
-// carries "no-store". This worker just respects that header rather than
-// re-deriving purchase state itself — anything marked no-store is never
-// written to the offline cache, so a preview visitor's access still can't
-// outlive its window.
+// single source of truth for entitlement: only buyers get a successful
+// response at all, and errors carry "no-store". This worker just respects
+// that rather than re-deriving purchase state itself — anything not ok or
+// marked no-store is never written to the offline cache.
 
 const CACHE_NAME = "flipbook-offline-v1";
 const CONTENT_PREFIX = "/flipbook-content/";

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { sql } from '@/lib/db'
 import { getStripe } from '@/lib/stripe'
+import { grantAccessFromCheckout } from '@/lib/book-purchase'
 
 function webhookSecret(): string {
   const secret = process.env.STRIPE_WEBHOOK_SECRET
@@ -35,6 +36,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true, deduped: true })
   }
 
+  try {
+    await handleEvent(event)
+  } catch (err) {
+    // Release the dedupe row so Stripe's retry gets processed instead of
+    // being swallowed as a duplicate.
+    await sql`DELETE FROM stripe_webhook_events WHERE stripe_event_id = ${event.id}`
+    console.error('[Stripe webhook] Processing failed', event.id, err)
+    return NextResponse.json({ error: 'Processing failed' }, { status: 500 })
+  }
+
+  return NextResponse.json({ ok: true })
+}
+
+async function handleEvent(event: Stripe.Event) {
   if (event.type === 'checkout.session.completed') {
     const checkoutSession = event.data.object as Stripe.Checkout.Session
 
@@ -42,9 +57,11 @@ export async function POST(request: NextRequest) {
     const productId = checkoutSession.metadata?.productId
     const tenantId = checkoutSession.metadata?.tenantId
 
+    // Payment Link checkouts (the buy button on kismetkrystle.com) have no
+    // account metadata — they unlock the book by the buyer's email instead.
     if (!authUserId || !productId || !tenantId) {
-      console.error('[Stripe webhook] checkout.session.completed missing metadata', checkoutSession.id)
-      return NextResponse.json({ ok: true, skipped: true })
+      await grantAccessFromCheckout(checkoutSession.id)
+      return
     }
 
     const paymentIntentId =
@@ -87,8 +104,12 @@ export async function POST(request: NextRequest) {
         SET status = 'refunded', access_granted = false
         WHERE stripe_payment_intent_id = ${paymentIntentId}
       `
+      await sql`
+        UPDATE access_grants
+        SET revoked_at = NOW()
+        WHERE stripe_payment_intent_id = ${paymentIntentId}
+          AND revoked_at IS NULL
+      `
     }
   }
-
-  return NextResponse.json({ ok: true })
 }

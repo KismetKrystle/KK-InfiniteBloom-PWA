@@ -11,6 +11,9 @@ interface ExperienceShareDialogProps {
   userName: string | null
 }
 
+// Shares point at the book on the main site — the reader itself is buyers-only.
+const SHARE_URL = 'https://www.kismetkrystle.com/#book'
+
 const DEFAULT_SHARE_TEXT =
   'Just experienced The Infinite Bloom by Kismet Krystle — poetry, audio narrations, and reflections in one place.'
 
@@ -33,7 +36,7 @@ export default function ExperienceShareDialog({ userEmail, userName }: Experienc
 
   async function handleNativeShare() {
     try {
-      await navigator.share({ title: 'The Infinite Bloom', text: message, url: `${window.location.origin}/` })
+      await navigator.share({ title: 'The Infinite Bloom', text: message, url: SHARE_URL })
       setDialogOpen(false)
     } catch {
       // User cancelled the native share sheet — leave the dialog open.
@@ -41,7 +44,7 @@ export default function ExperienceShareDialog({ userEmail, userName }: Experienc
   }
 
   function openPlatform(platform: 'x' | 'facebook') {
-    const url = encodeURIComponent(`${window.location.origin}/`)
+    const url = encodeURIComponent(SHARE_URL)
     const text = encodeURIComponent(message)
     const shareUrl =
       platform === 'x'
@@ -53,7 +56,7 @@ export default function ExperienceShareDialog({ userEmail, userName }: Experienc
   async function copyLink() {
     // The URL on its own line (not inline with the message) is what makes most
     // apps' auto-linker actually turn it into a clickable link once pasted.
-    await navigator.clipboard.writeText(`${message}\n\n${window.location.origin}/`)
+    await navigator.clipboard.writeText(`${message}\n\n${SHARE_URL}`)
     setCopyStatus('copied')
     setTimeout(() => setCopyStatus('idle'), 2000)
   }
