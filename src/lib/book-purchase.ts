@@ -1,9 +1,6 @@
 import { sql } from "@/lib/db"
 import { getStripe } from "@/lib/stripe"
 
-// The "Buy Digital Book" Stripe Payment Link used on kismetkrystle.com.
-export const BOOK_PAYMENT_LINK = "https://buy.stripe.com/14AeVe19WcfZ16pg0v8N202"
-
 const PAID_STATUSES = new Set(["paid", "no_payment_required"])
 
 // Payment Link checkouts carry no account metadata, so the buyer is

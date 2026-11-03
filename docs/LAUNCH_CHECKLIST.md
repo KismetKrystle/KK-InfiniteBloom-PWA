@@ -1,6 +1,6 @@
 # Digital book launch checklist
 
-What this sets up: a buyer clicks **Buy Digital Book** on kismetkrystle.com, pays $20 through Stripe, and lands on `read.kismetkrystle.com/welcome`. A 6-digit code is emailed to them; they type it in on that page and the book opens. They stay signed in for 90 days. Nobody can read the book without a purchase or a grant from you.
+What this sets up: the **Digital Book** button on kismetkrystle.com opens `read.kismetkrystle.com/flipbook`. Visitors read the real book, narration included, for 3 minutes, then get **Get your copy · $20** (Stripe) or **Sign in**. After paying they land on `/welcome`, a 6-digit code is emailed to them, they type it in, and the whole book opens. They stay signed in for 90 days.
 
 Do the parts **in order**. Each one ends with a ✅ check. Don't move on until the check passes.
 
@@ -65,7 +65,7 @@ Right now emails come from `onboarding@resend.dev`. Resend only delivers that ad
 
 You can delete `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`. Google sign-in is gone.
 
-Already set and unchanged: `DATABASE_URL`, `BETTER_AUTH_SECRET`, `RESEND_API_KEY`, and all `R2_*` values.
+Already set and unchanged: `DATABASE_URL`, `BETTER_AUTH_SECRET`, `RESEND_API_KEY`, `PREVIEW_COOKIE_SECRET` (it signs the 3-minute preview timer — the old preview used it too, so check it's still there), and all `R2_*` values.
 
 ## Part 5 — Deploy the code
 
@@ -73,7 +73,7 @@ Both repos have the work on branch `claude/flipbook-purchase-access-3t5bki`.
 
 1. **Preview first (optional but smart):** Vercel builds a preview of the branch automatically. Its URL is in Vercel → Deployments. Cloudflare does the same for KK-Main (Worker → Deployments → preview URL). Click around both.
 2. **Go live:** on GitHub, open each repo → **Pull requests → New** → base `main` ← compare `claude/flipbook-purchase-access-3t5bki` → **Create** → **Merge**. Do the **PWA first, then KK-Main**, so the "Open your book" links work the moment they appear.
-3. ✅ `https://read.kismetkrystle.com` shows **OPEN YOUR BOOK.** with an email box.
+3. ✅ In a private window, `https://read.kismetkrystle.com` opens the book with **PREVIEW · 3:00 LEFT** at the top. After 3 minutes of reading, **KEEP READING.** appears with the buy and sign-in options.
 4. ✅ On kismetkrystle.com, **Read a few pages** shows two page spreads and a **Get the digital book · $20** button.
 
 ## Part 6 — Stripe
@@ -96,7 +96,7 @@ Both repos have the work on branch `claude/flipbook-purchase-access-3t5bki`.
 2. ✅ You land on **WELCOME TO THE BLOOM.**, and an email with a 6-digit code arrives from `books@kismetkrystle.com`. Check spam the first time.
 3. ✅ Typing the code opens the book. Try the **Reflections** bubble and **account menu → Write to Kismet**, and check that the note reaches your Gmail.
 4. **Refund yourself** in Stripe → Payments → that payment → Refund.
-5. ✅ Within a minute or two, refresh the reader: it should say **NO COPY FOUND.** That proves refunds take access away.
+5. ✅ Within a minute or two, refresh the reader: the **PREVIEW** countdown is back and, once it runs out, the panel says there's no purchase for your email. That proves refunds take access away.
 
 Stripe keeps its processing fee (about $0.90) on a refund. That's the cost of a real test.
 
@@ -126,4 +126,5 @@ and on refund sets revoked_at so access stops.
 
 - **Coming back later or on a new device:** read.kismetkrystle.com → enter email → type the code. No passwords and no device limit. The code is typed on the device they're using, so it also works inside an installed home-screen app.
 - **Someone bought with a different email:** add their real email at `/admin/access-grants`.
-- **Turned off for now:** the free time-limited preview, the device limit, password and Google sign-in, the audio page (`/audio` redirects to the book), and the old bento homepage (`/` redirects to the book). The code for audio and the homepage is still in the repo.
+- **Preview:** 3 minutes of active reading per browser (it pauses when the tab is in the background). Someone determined could restart it in a private window — an accepted trade-off for letting people hear the real book.
+- **Turned off for now:** the device limit, password and Google sign-in, the audio page (`/audio` redirects to the book), and the old bento homepage (`/` redirects to the book). The code for audio and the homepage is still in the repo.

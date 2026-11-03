@@ -1,4 +1,65 @@
+import { createHmac, timingSafeEqual } from "crypto"
 import { sql } from "@/lib/db"
+
+// Anyone who isn't a buyer gets a 3-minute *active* preview of the real
+// reader (narration included), then the "get your copy" prompt. The client
+// pings /api/flipbook/preview-heartbeat every tick while the book is open
+// and the tab is visible; each accepted ping adds exactly this many seconds
+// to the signed cookie's usedS — never a client-supplied duration — so the
+// budget can't be inflated, and it stops the moment the tab is backgrounded.
+export const PREVIEW_DURATION_S = 180
+export const PREVIEW_HEARTBEAT_TICK_S = 5
+export const PREVIEW_COOKIE_MAX_AGE_S = 60 * 60 * 24 * 400 // ~400 days (browsers cap cookie lifetime around here)
+
+// Signed-in visitors get a separate cookie, so browsing anonymously first
+// doesn't use up the preview they'd get after signing in.
+export function previewCookieName(bookSlug: string, signedIn: boolean): string {
+  return signedIn ? `ib_preview_user_${bookSlug}` : `ib_preview_${bookSlug}`
+}
+
+function cookieSecret(): string {
+  const secret = process.env.PREVIEW_COOKIE_SECRET
+  if (!secret) throw new Error("Missing env var: PREVIEW_COOKIE_SECRET")
+  return secret
+}
+
+function sign(payloadB64: string): string {
+  return createHmac("sha256", cookieSecret()).update(payloadB64).digest("base64url")
+}
+
+export function verifyPreviewCookie(value: string, bookId: string): { usedS: number } | null {
+  const [payloadB64, signature] = value.split(".")
+  if (!payloadB64 || !signature) return null
+
+  const given = Buffer.from(signature)
+  const wanted = Buffer.from(sign(payloadB64))
+  if (given.length !== wanted.length || !timingSafeEqual(given, wanted)) return null
+
+  try {
+    const payload = JSON.parse(Buffer.from(payloadB64, "base64url").toString("utf8"))
+    if (payload.bookId !== bookId || typeof payload.usedS !== "number") return null
+    return { usedS: payload.usedS }
+  } catch {
+    return null
+  }
+}
+
+export function makePreviewCookie(bookId: string, usedS: number): string {
+  const payloadB64 = Buffer.from(JSON.stringify({ bookId, usedS })).toString("base64url")
+  return `${payloadB64}.${sign(payloadB64)}`
+}
+
+export function previewCookieOptions() {
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax" as const,
+    // "/" (not scoped to /flipbook-content) so the heartbeat and status
+    // endpoints under /api/flipbook can read and update it too.
+    path: "/",
+    maxAge: PREVIEW_COOKIE_MAX_AGE_S,
+  }
+}
 
 // Book metadata never changes without a deploy, so it's cached for the life
 // of a warm serverless instance. Only positive purchase checks are cached —

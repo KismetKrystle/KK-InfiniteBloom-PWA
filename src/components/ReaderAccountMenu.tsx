@@ -16,7 +16,14 @@ import { authClient } from '@/lib/auth-client'
 
 const MAX_NOTE_LENGTH = 2000
 
-export default function ReaderAccountMenu({ user }: { user: { name: string | null; email: string } }) {
+export default function ReaderAccountMenu({
+  user,
+  isBuyer,
+}: {
+  user: { name: string | null; email: string }
+  // Notes to Kismet are a reader perk; the API refuses everyone else.
+  isBuyer: boolean
+}) {
   const router = useRouter()
   const [noteOpen, setNoteOpen] = useState(false)
 
@@ -39,10 +46,14 @@ export default function ReaderAccountMenu({ user }: { user: { name: string | nul
             <p className="text-sm truncate">{user.email}</p>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={() => setNoteOpen(true)} className="cursor-pointer">
-            <Mail className="w-4 h-4" /> Write to Kismet
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
+          {isBuyer && (
+            <>
+              <DropdownMenuItem onSelect={() => setNoteOpen(true)} className="cursor-pointer">
+                <Mail className="w-4 h-4" /> Write to Kismet
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+            </>
+          )}
           <DropdownMenuItem onSelect={handleSignOut} className="cursor-pointer">
             <LogOut className="w-4 h-4" /> Sign out
           </DropdownMenuItem>

@@ -3,7 +3,15 @@ import { NextRequest, NextResponse } from "next/server"
 import { GetObjectCommand } from "@aws-sdk/client-s3"
 import { auth } from "@/lib/auth"
 import { r2Client, R2_BUCKET } from "@/lib/r2"
-import { resolveBook, hasPurchased } from "@/lib/flipbook-access"
+import {
+  PREVIEW_DURATION_S,
+  previewCookieName,
+  previewCookieOptions,
+  resolveBook,
+  hasPurchased,
+  verifyPreviewCookie,
+  makePreviewCookie,
+} from "@/lib/flipbook-access"
 
 function errorResponse(error: string, status: number): NextResponse {
   return NextResponse.json({ error }, { status, headers: { "Cache-Control": "no-store" } })
@@ -39,10 +47,21 @@ export async function GET(
     return NextResponse.redirect(new URL("/flipbook", request.url))
   }
 
-  // Buyers only — there's no free preview. The sample lives on
-  // kismetkrystle.com as static images, so nothing here is ever public.
-  if (!(await hasPurchased(session?.user, book.id))) {
-    return errorResponse("Purchase required", 403)
+  // Buyers get everything. Everyone else reads the real book only while
+  // their 3-minute preview lasts; the time itself is counted by the
+  // heartbeat route, this just checks it and plants the cookie on a
+  // visitor's very first request.
+  const purchased = await hasPurchased(session?.user, book.id)
+  const cookieName = previewCookieName(bookSlug, Boolean(session))
+  let cookieToSet: string | null = null
+
+  if (!purchased) {
+    const existing = request.cookies.get(cookieName)?.value
+    const verified = existing ? verifyPreviewCookie(existing, book.id) : null
+    if ((verified?.usedS ?? 0) >= PREVIEW_DURATION_S) {
+      return errorResponse("Preview ended", 403)
+    }
+    if (!verified) cookieToSet = makePreviewCookie(book.id, 0)
   }
 
   const key = `${book.r2_prefix}/${path.join("/")}`
@@ -62,13 +81,18 @@ export async function GET(
     return errorResponse("Not found", 404)
   }
 
-  // Static sub-assets (images/JS/CSS never change per book) get a long
-  // private cache so reopening the flipbook hits the browser cache instead
-  // of re-running the whole chain per file. The entry HTML stays
-  // short-lived so a revoked grant can't outlive it for long.
-  const cacheControl = isEntryPoint ? "private, max-age=300" : "private, max-age=604800, immutable"
+  // Buyers get a long private cache on the static sub-assets (images/JS/CSS
+  // never change per book) so reopening the book hits the browser cache.
+  // Preview responses are never cached, so access can't outlive the 3
+  // minutes, and the entry HTML stays short-lived so a revoked grant
+  // can't linger.
+  const cacheControl = !purchased
+    ? "private, no-store"
+    : isEntryPoint
+      ? "private, max-age=300"
+      : "private, max-age=604800, immutable"
 
-  return new NextResponse(Buffer.from(bytes), {
+  const response = new NextResponse(Buffer.from(bytes), {
     status: 200,
     headers: {
       "Content-Type": object.ContentType ?? "application/octet-stream",
@@ -76,4 +100,6 @@ export async function GET(
       "Cache-Control": cacheControl,
     },
   })
+  if (cookieToSet) response.cookies.set(cookieName, cookieToSet, previewCookieOptions())
+  return response
 }
