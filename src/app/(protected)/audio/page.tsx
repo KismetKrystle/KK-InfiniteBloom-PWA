@@ -1,15 +1,22 @@
 import { headers } from 'next/headers'
+import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
 import { getAudioAccess } from '@/lib/audio-access'
 import SharedNavbar from '@/components/SharedNavbar'
 import AudioChapters from '@/components/AudioChapters'
 import DonateSection from '@/components/DonateSection'
 import CommentSection from '@/components/CommentSection'
-import AudioSignupGate from '@/components/AudioSignupGate'
+import CodeSignInForm from '@/components/CodeSignInForm'
 import BookClaimForm from '@/components/BookClaimForm'
 import AudioWelcomeModal from '@/components/AudioWelcomeModal'
 
+// Audio is parked for now — the reader only sells the book. Delete this
+// redirect to bring the page back (its sign-in gate still offers password
+// and Google sign-in, which are turned off, so update it first).
+const AUDIO_ENABLED = false
+
 export default async function AudioPage() {
+  if (!AUDIO_ENABLED) redirect('/flipbook')
   const session = await auth.api.getSession({ headers: await headers() })
   const { purchased, claimed, granted, hasAccess } = await getAudioAccess(session?.user?.id, session?.user?.email)
 
@@ -34,7 +41,13 @@ export default async function AudioPage() {
         <CommentSection context="audio" prompt="Tell us what these poems meant to you." user={session?.user ?? null} />
       </main>
 
-      {!session && <AudioSignupGate />}
+      {!session && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-white/60 backdrop-blur-[2px]">
+          <div className="kk w-full max-w-md p-8 border kk-rule">
+            <CodeSignInForm next="/audio" />
+          </div>
+        </div>
+      )}
 
       {session && !hasAccess && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 overflow-y-auto bg-white/40 backdrop-blur-[2px]">

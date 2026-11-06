@@ -11,6 +11,9 @@ interface ExperienceShareDialogProps {
   userName: string | null
 }
 
+// Shares point at the book on the main site — the reader itself is buyers-only.
+const SHARE_URL = 'https://www.kismetkrystle.com/#book'
+
 const DEFAULT_SHARE_TEXT =
   'Just experienced The Infinite Bloom by Kismet Krystle — poetry, audio narrations, and reflections in one place.'
 
@@ -33,7 +36,7 @@ export default function ExperienceShareDialog({ userEmail, userName }: Experienc
 
   async function handleNativeShare() {
     try {
-      await navigator.share({ title: 'The Infinite Bloom', text: message, url: `${window.location.origin}/` })
+      await navigator.share({ title: 'The Infinite Bloom', text: message, url: SHARE_URL })
       setDialogOpen(false)
     } catch {
       // User cancelled the native share sheet — leave the dialog open.
@@ -41,7 +44,7 @@ export default function ExperienceShareDialog({ userEmail, userName }: Experienc
   }
 
   function openPlatform(platform: 'x' | 'facebook') {
-    const url = encodeURIComponent(`${window.location.origin}/`)
+    const url = encodeURIComponent(SHARE_URL)
     const text = encodeURIComponent(message)
     const shareUrl =
       platform === 'x'
@@ -53,19 +56,19 @@ export default function ExperienceShareDialog({ userEmail, userName }: Experienc
   async function copyLink() {
     // The URL on its own line (not inline with the message) is what makes most
     // apps' auto-linker actually turn it into a clickable link once pasted.
-    await navigator.clipboard.writeText(`${message}\n\n${window.location.origin}/`)
+    await navigator.clipboard.writeText(`${message}\n\n${SHARE_URL}`)
     setCopyStatus('copied')
     setTimeout(() => setCopyStatus('idle'), 2000)
   }
 
   return (
     <>
-      <div className="flex items-center space-x-3 cursor-pointer" onClick={openDialog}>
-        <div className="bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-200 hover:border-pink-300 rounded-lg p-2 transition-colors">
-          <Heart className="w-4 h-4 text-pink-500" />
-        </div>
-        <span>Share Your Experience</span>
-      </div>
+      <button type="button" className="kk-outline w-full justify-between" onClick={openDialog}>
+        <span className="flex items-center gap-2">
+          <Heart className="w-4 h-4" /> Share your experience
+        </span>
+        <span aria-hidden="true">→</span>
+      </button>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-md">
@@ -86,9 +89,9 @@ export default function ExperienceShareDialog({ userEmail, userName }: Experienc
                       router.push('/login')
                     }
                   }}
-                  className="w-full flex items-center gap-3 p-4 rounded-xl border border-border hover:border-pink-300 hover:bg-pink-50/50 transition-colors text-left"
+                  className="w-full flex items-center gap-3 p-4 rounded-none border border-border hover:border-[#2180c6] hover:bg-[#2180c6]/5 transition-colors text-left"
                 >
-                  <MessageSquareQuote className="w-5 h-5 text-pink-500 shrink-0" />
+                  <MessageSquareQuote className="w-5 h-5 text-[#2180c6] shrink-0" />
                   <div>
                     <p className="text-sm font-medium">Leave a Testimonial</p>
                     <p className="text-xs text-muted-foreground">
@@ -99,9 +102,9 @@ export default function ExperienceShareDialog({ userEmail, userName }: Experienc
 
                 <button
                   onClick={() => setView("compose")}
-                  className="w-full flex items-center gap-3 p-4 rounded-xl border border-border hover:border-pink-300 hover:bg-pink-50/50 transition-colors text-left"
+                  className="w-full flex items-center gap-3 p-4 rounded-none border border-border hover:border-[#2180c6] hover:bg-[#2180c6]/5 transition-colors text-left"
                 >
-                  <Share2 className="w-5 h-5 text-pink-500 shrink-0" />
+                  <Share2 className="w-5 h-5 text-[#2180c6] shrink-0" />
                   <div>
                     <p className="text-sm font-medium">Share on Social</p>
                     <p className="text-xs text-muted-foreground">Post a link to Infinite Bloom for friends to discover.</p>
@@ -127,7 +130,7 @@ export default function ExperienceShareDialog({ userEmail, userName }: Experienc
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   rows={4}
-                  className="w-full px-3 py-2 rounded-xl border border-[#d4d4d4] text-sm text-[#111] outline-none focus:border-[#F27D26] transition-colors resize-none"
+                  className="w-full px-3 py-2 rounded-none border border-[#aaa79e] text-sm text-[#111] outline-none focus:border-[#2180c6] transition-colors resize-none"
                 />
                 <p className="text-xs text-muted-foreground -mt-2">
                   A link to the site is added automatically when you share.
@@ -137,8 +140,8 @@ export default function ExperienceShareDialog({ userEmail, userName }: Experienc
                   <button
                     onClick={handleNativeShare}
                     disabled={!message.trim()}
-                    className="w-full py-2.5 rounded-xl text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
-                    style={{ backgroundColor: "#F27D26" }}
+                    className="w-full py-2.5 rounded-none text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                    style={{ backgroundColor: "#121212" }}
                   >
                     Share…
                   </button>
@@ -147,19 +150,19 @@ export default function ExperienceShareDialog({ userEmail, userName }: Experienc
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => openPlatform("x")}
-                    className="text-xs px-3 py-1.5 rounded-full border border-border hover:border-pink-300 transition-colors"
+                    className="text-xs px-3 py-1.5 rounded-none border border-[#aaa79e] hover:border-[#2180c6] transition-colors"
                   >
                     X / Twitter
                   </button>
                   <button
                     onClick={() => openPlatform("facebook")}
-                    className="text-xs px-3 py-1.5 rounded-full border border-border hover:border-pink-300 transition-colors"
+                    className="text-xs px-3 py-1.5 rounded-none border border-[#aaa79e] hover:border-[#2180c6] transition-colors"
                   >
                     Facebook
                   </button>
                   <button
                     onClick={copyLink}
-                    className="text-xs px-3 py-1.5 rounded-full border border-border hover:border-pink-300 transition-colors"
+                    className="text-xs px-3 py-1.5 rounded-none border border-[#aaa79e] hover:border-[#2180c6] transition-colors"
                   >
                     {copyStatus === "copied" ? "Copied!" : "Copy link"}
                   </button>

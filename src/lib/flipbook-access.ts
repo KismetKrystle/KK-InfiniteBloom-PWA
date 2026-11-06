@@ -1,34 +1,21 @@
 import { createHmac, timingSafeEqual } from "crypto"
 import { sql } from "@/lib/db"
 
-export const PREVIEW_DURATION_S = 300
-
-// The client pings /api/flipbook/preview-heartbeat on this cadence while the
-// book is open AND the tab is visible (paused otherwise via the Page
-// Visibility API). Each accepted ping adds exactly this many seconds to the
-// cookie's usedS — never a client-supplied duration — so the budget can't be
-// inflated by clock tricks, and it stops accumulating the instant the tab is
-// backgrounded or the reader is closed.
+// Anyone who isn't a buyer gets a 3-minute *active* preview of the real
+// reader (narration included), then the "get your copy" prompt. The client
+// pings /api/flipbook/preview-heartbeat every tick while the book is open
+// and the tab is visible; each accepted ping adds exactly this many seconds
+// to the signed cookie's usedS — never a client-supplied duration — so the
+// budget can't be inflated, and it stops the moment the tab is backgrounded.
+export const PREVIEW_DURATION_S = 180
 export const PREVIEW_HEARTBEAT_TICK_S = 5
+export const PREVIEW_COOKIE_MAX_AGE_S = 60 * 60 * 24 * 400 // ~400 days (browsers cap cookie lifetime around here)
 
-// Every visitor (signed in or anonymous) gets a 5-minute *active* preview,
-// full stop — accumulated in usedS across the cookie's ~400-day lifetime, so
-// it never silently resets on reload/return, and never runs down while the
-// visitor isn't actually on the page. The paywall stays up until they buy.
-// Signing in starts a *different* cookie, so it isn't blocked by prior
-// anonymous browsing on the same device.
-export const PREVIEW_COOKIE_MAX_AGE_S = 60 * 60 * 24 * 400 // ~400 days (browsers cap cookie lifetime around here anyway)
-
+// Signed-in visitors get a separate cookie, so browsing anonymously first
+// doesn't use up the preview they'd get after signing in.
 export function previewCookieName(bookSlug: string, signedIn: boolean): string {
   return signedIn ? `ib_preview_user_${bookSlug}` : `ib_preview_${bookSlug}`
 }
-
-// Book metadata never changes without a deploy, and purchase status changes
-// rarely enough that a short TTL is safe — both are cheap to cache in-memory
-// for the life of a warm serverless instance instead of querying per request.
-const BOOK_CACHE = new Map<string, { id: string; r2_prefix: string } | null>()
-const PURCHASE_CACHE_TTL_MS = 60_000
-const purchaseCache = new Map<string, { purchased: boolean; expiresAt: number }>()
 
 function cookieSecret(): string {
   const secret = process.env.PREVIEW_COOKIE_SECRET
@@ -44,9 +31,8 @@ export function verifyPreviewCookie(value: string, bookId: string): { usedS: num
   const [payloadB64, signature] = value.split(".")
   if (!payloadB64 || !signature) return null
 
-  const expected = sign(payloadB64)
   const given = Buffer.from(signature)
-  const wanted = Buffer.from(expected)
+  const wanted = Buffer.from(sign(payloadB64))
   if (given.length !== wanted.length || !timingSafeEqual(given, wanted)) return null
 
   try {
@@ -62,6 +48,26 @@ export function makePreviewCookie(bookId: string, usedS: number): string {
   const payloadB64 = Buffer.from(JSON.stringify({ bookId, usedS })).toString("base64url")
   return `${payloadB64}.${sign(payloadB64)}`
 }
+
+export function previewCookieOptions() {
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax" as const,
+    // "/" (not scoped to /flipbook-content) so the heartbeat and status
+    // endpoints under /api/flipbook can read and update it too.
+    path: "/",
+    maxAge: PREVIEW_COOKIE_MAX_AGE_S,
+  }
+}
+
+// Book metadata never changes without a deploy, so it's cached for the life
+// of a warm serverless instance. Only positive purchase checks are cached —
+// a reader who buys while the page is open must not be stuck behind a
+// stale "no" — and the short TTL bounds how long a revoked grant lingers.
+const BOOK_CACHE = new Map<string, { id: string; r2_prefix: string } | null>()
+const PURCHASE_CACHE_TTL_MS = 60_000
+const purchaseCache = new Map<string, number>()
 
 export async function resolveBook(bookSlug: string) {
   if (BOOK_CACHE.has(bookSlug)) return BOOK_CACHE.get(bookSlug) ?? undefined
@@ -82,31 +88,34 @@ export async function resolveBook(bookSlug: string) {
   return resolved ?? undefined
 }
 
+// Access grants are matched by email, so they only count once the email is
+// proven — magic-link sign-in marks it verified. Without that check anyone
+// could claim a buyer's grant by registering their address unverified.
 export async function hasPurchased(
-  authUserId: string | undefined,
-  email: string | undefined,
+  user: { id: string; email: string; emailVerified: boolean } | undefined,
   bookId: string
 ): Promise<boolean> {
-  if (!authUserId) return false
+  if (!user) return false
 
-  const cacheKey = `${authUserId}:${bookId}`
-  const cached = purchaseCache.get(cacheKey)
-  if (cached && cached.expiresAt > Date.now()) return cached.purchased
+  const cacheKey = `${user.id}:${bookId}`
+  const cachedUntil = purchaseCache.get(cacheKey)
+  if (cachedUntil && cachedUntil > Date.now()) return true
 
+  const grantEmail = user.emailVerified ? user.email : ""
   const rows = await sql`
     SELECT 1 FROM purchases pu
     WHERE pu.product_id = ${bookId}
-      AND pu.user_id = (SELECT id FROM user_profiles WHERE auth_user_id = ${authUserId})
+      AND pu.user_id = (SELECT id FROM user_profiles WHERE auth_user_id = ${user.id})
       AND pu.status = 'completed'
       AND pu.access_granted = true
     UNION ALL
     SELECT 1 FROM access_grants ag
-    WHERE lower(ag.email) = lower(${email ?? ''})
+    WHERE lower(ag.email) = lower(${grantEmail})
       AND ag.revoked_at IS NULL
       AND (ag.expires_at IS NULL OR ag.expires_at > NOW())
     LIMIT 1
   `
   const purchased = rows.length > 0
-  purchaseCache.set(cacheKey, { purchased, expiresAt: Date.now() + PURCHASE_CACHE_TTL_MS })
+  if (purchased) purchaseCache.set(cacheKey, Date.now() + PURCHASE_CACHE_TTL_MS)
   return purchased
 }
