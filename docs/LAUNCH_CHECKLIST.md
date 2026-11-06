@@ -19,7 +19,7 @@ Do the parts **in order**. Each one ends with a ✅ check. Don't move on until t
 
 Open **Neon → your project → SQL Editor**, then:
 
-1. **Add the new columns.** Paste the whole file `migrations/0016_stripe_payment_link_grants.sql` and run it. It's safe to run twice.
+1. **Add the new columns.** Paste the whole file `migrations/0016_stripe_payment_link_grants.sql` and run it. It's safe to run twice.✅
 2. **Check the book's Stripe price.** Run:
    ```sql
    SELECT name, stripe_price_id FROM products WHERE type = 'flipbook';
@@ -30,24 +30,24 @@ Open **Neon → your project → SQL Editor**, then:
      ```sql
      UPDATE products SET stripe_price_id = 'price_PASTE_HERE' WHERE type = 'flipbook';
      ```
-   This matters: the code unlocks the book only when the purchase used **this** price. That's how the in-person Payment Link is kept from unlocking the digital book.
+   This matters: the code unlocks the book only when the purchase used **this** price. That's how the in-person Payment Link is kept from unlocking the digital book.✅
 3. **Make yourself an admin** (for revoking access later):
    ```sql
    UPDATE user_profiles SET role = 'admin' WHERE email = 'kismetthepoet@gmail.com';
    ```
-   If it says `UPDATE 0`, sign in at read.kismetkrystle.com once (after Part 5) and run it again.
-4. ✅ `SELECT column_name FROM information_schema.columns WHERE table_name = 'access_grants';` lists `stripe_checkout_session_id` and `stripe_payment_intent_id`.
+   If it says `UPDATE 0`, sign in at read.kismetkrystle.com once (after Part 5) and run it again.✅
+4. ✅ `SELECT column_name FROM information_schema.columns WHERE table_name = 'access_grants';` lists `stripe_checkout_session_id` and `stripe_payment_intent_id`.✅
 
 ## Part 3 — Let the app email anyone (Resend), about 15 minutes plus waiting
 
 Right now emails come from `onboarding@resend.dev`. Resend only delivers that address to **your own** inbox, so buyers would never get their code.
 
-1. **Resend → Domains → Add domain** → `kismetkrystle.com`.
-2. Resend lists a few DNS records (TXT/MX, usually on a `send` subdomain). Add each one in **Cloudflare DNS** exactly as shown, all **DNS only (grey cloud)**. Don't touch your existing records.
-3. Wait for Resend to show **Verified**. Often minutes, sometimes up to a few hours.
-4. ✅ Resend shows the domain as **Verified**.
+1. **Resend → Domains → Add domain** → `kismetkrystle.com`.✅
+2. Resend lists a few DNS records (TXT/MX, usually on a `send` subdomain). Add each one in **Cloudflare DNS** exactly as shown, all **DNS only (grey cloud)**. Don't touch your existing records.✅
+3. Wait for Resend to show **Verified**. Often minutes, sometimes up to a few hours.✅
+4. ✅ Resend shows the domain as **Verified**.✅
 
-> **Where does `books@kismetkrystle.com` go?** Nowhere. It's only the "From" name on outgoing email. Replies to sign-in emails go to the reply-to address (step 4 below), and "Write to Kismet" notes already reply straight to the reader. If you ever want mail *to* books@ to reach you, turn on **Cloudflare → Email → Email Routing** and forward it to your Gmail.
+> **Where does `books@kismetkrystle.com` go?** Nowhere. It's only the "From" name on outgoing email. Replies to sign-in emails go to the reply-to address (step 4 below), and "Write to Kismet" notes already reply straight to the reader. If you ever want mail *to* books@ to reach you, turn on **Cloudflare → Email → Email Routing** and forward it to your Gmail.✅
 
 ## Part 4 — Vercel environment variables
 
