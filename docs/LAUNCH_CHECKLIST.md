@@ -8,12 +8,12 @@ Do the parts **in order**. Each one ends with a ✅ check. Don't move on until t
 
 ## Part 1 — Point `read.kismetkrystle.com` at the PWA (Vercel + Cloudflare)
 
-1. **Vercel →** the project connected to **KK-InfiniteBloom-PWA** → **Settings → Domains → Add** → `read.kismetkrystle.com`.
-2. Vercel shows a **CNAME** target (something like `cname.vercel-dns.com` or `xxxx.vercel-dns-0xx.com`). Copy it.
+1. **Vercel →** the project connected to **KK-InfiniteBloom-PWA** → **Settings → Domains → Add** → `read.kismetkrystle.com`.✅
+2. Vercel shows a **CNAME** target (something like `cname.vercel-dns.com` or `xxxx.vercel-dns-0xx.com`). Copy it.✅
 3. **Cloudflare →** Domains → kismetkrystle.com → **DNS → Records → Add record**
-   - Type: `CNAME` · Name: `read` · Target: *(what Vercel showed)*
-   - Proxy status: **DNS only (grey cloud)**. Vercel has to see traffic directly to issue the HTTPS certificate.
-4. ✅ Vercel shows **Valid Configuration** for `read.kismetkrystle.com`. This can take a few minutes.
+   - Type: `CNAME` · Name: `read` · Target: *(what Vercel showed)*✅
+   - Proxy status: **DNS only (grey cloud)**. Vercel has to see traffic directly to issue the HTTPS certificate.✅
+4. ✅ Vercel shows **Valid Configuration** for `read.kismetkrystle.com`. This can take a few minutes.✅
 
 ## Part 2 — Database (Neon), about 5 minutes
 
