@@ -124,7 +124,12 @@ Stripe webhook does the same grant in the background (backup),
 and on refund sets revoked_at so access stops.
 ```
 
-- **Coming back later or on a new device:** read.kismetkrystle.com → enter email → type the code. No passwords and no device limit. The code is typed on the device they're using, so it also works inside an installed home-screen app.
+- **Coming back later or on a new device:** read.kismetkrystle.com → enter email → type the code. No passwords. The terms allow one reader on up to three devices (not enforced in code yet; see "Later" below). The code is typed on the device they're using, so it also works inside an installed home-screen app.
 - **Someone bought with a different email:** add their real email at `/admin/access-grants`.
 - **Preview:** 3 minutes of active reading per browser (it pauses when the tab is in the background). Someone determined could restart it in a private window — an accepted trade-off for letting people hear the real book.
 - **Turned off for now:** the device limit, password and Google sign-in, the audio page (`/audio` redirects to the book), and the old bento homepage (`/` redirects to the book). The code for audio and the homepage is still in the repo.
+
+## Later
+
+- **Enforce the device limit.** The terms already say one reader on up to three devices. The old per-device check (`user_devices` table, removed in the launch) can come back with a limit of 3, plus a "sign out other devices" option for buyers.
+- **Group access** (classrooms, book clubs): handled by email for now; grant extra emails at `/admin/access-grants`.
