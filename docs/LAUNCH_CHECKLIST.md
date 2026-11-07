@@ -136,6 +136,7 @@ and on refund sets revoked_at so access stops.
 - **Group access** (classrooms, book clubs): handled by email for now; grant extra emails at `/admin/access-grants`.
 - **Classroom / group licence as a paid product.** Decide pricing (per class or per student) and how to sell it (Payment Link or invoice).
 - **Digital book FAQ** on kismetkrystle.com: what's included (45 poems + narration), the 3-minute preview, signing in with a code, devices, offline reading, all sales final, contact.
+- **Daily (or weekly) preview refresh.** Reset the 3-minute preview 24 hours after a visitor's preview started, and tell them on the "Keep reading" panel when it refreshes ("Your free preview refreshes in about 14 hours, or keep reading now for $20"). Server-counted, buyers unaffected.
 - **Install-to-home-screen popup** for buyers (Android/desktop install button, iPhone "Share → Add to Home Screen" steps). Check the R2 bucket size first so any offline wording is accurate; a full "download for offline" option is a bigger follow-up.
 - **Unlock by product, not by one price ID.** Change the purchase check to accept any price on the digital book's Stripe product, so new prices, currencies or sales never lock buyers out. Do this before creating any new price.
 - **Rupiah price.** Adaptive Pricing handles IDR for now. For a clean fixed amount, do the item above first, then create a new price with an IDR currency option.
