@@ -15,6 +15,17 @@ interface CodeSignInFormProps {
   autoSendKey?: string
 }
 
+// A blocked or stalled request (e.g. the app pointed at the wrong domain)
+// would otherwise leave the button spinning forever with no message.
+const REQUEST_TIMEOUT_MS = 20_000
+
+function withTimeout<T>(promise: Promise<T>): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error('timeout')), REQUEST_TIMEOUT_MS)),
+  ])
+}
+
 function maskEmail(email: string) {
   const [name, domain] = email.split('@')
   return domain ? `${name.slice(0, 1)}•••@${domain}` : email
@@ -32,12 +43,16 @@ export default function CodeSignInForm({ next, lockedEmail, requestCode, autoSen
   async function sendCode() {
     setError('')
     setBusy(true)
-    let ok: boolean
-    if (requestCode) {
-      ok = await requestCode()
-    } else {
-      const { error } = await authClient.emailOtp.sendVerificationOtp({ email, type: 'sign-in' })
-      ok = !error
+    let ok = false
+    try {
+      if (requestCode) {
+        ok = await withTimeout(requestCode())
+      } else {
+        const { error } = await withTimeout(authClient.emailOtp.sendVerificationOtp({ email, type: 'sign-in' }))
+        ok = !error
+      }
+    } catch {
+      ok = false
     }
     setBusy(false)
     if (!ok) {
@@ -69,7 +84,12 @@ export default function CodeSignInForm({ next, lockedEmail, requestCode, autoSen
     e.preventDefault()
     setError('')
     setBusy(true)
-    const { error } = await authClient.signIn.emailOtp({ email, otp: code })
+    let error: { code?: string } | null = null
+    try {
+      error = (await withTimeout(authClient.signIn.emailOtp({ email, otp: code }))).error
+    } catch {
+      error = { code: 'NETWORK' }
+    }
     if (error) {
       setBusy(false)
       setCode('')
@@ -137,8 +157,9 @@ export default function CodeSignInForm({ next, lockedEmail, requestCode, autoSen
           ref={codeInput}
           inputMode="numeric"
           autoComplete="one-time-code"
+          // No maxLength: it would truncate a pasted " 482 913" before the
+          // non-digits are stripped below, leaving 5 digits and a dead button.
           pattern="[0-9]{6}"
-          maxLength={6}
           placeholder="••••••"
           value={code}
           onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
