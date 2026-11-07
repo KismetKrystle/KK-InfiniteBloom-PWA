@@ -133,3 +133,15 @@ and on refund sets revoked_at so access stops.
 
 - **Enforce the device limit.** The terms already say one reader on up to three devices. The old per-device check (`user_devices` table, removed in the launch) can come back with a limit of 3, plus a "sign out other devices" option for buyers.
 - **Group access** (classrooms, book clubs): handled by email for now; grant extra emails at `/admin/access-grants`.
+- **Classroom / group licence as a paid product.** Decide pricing (per class or per student) and how to sell it (Payment Link or invoice).
+- **Digital book FAQ** on kismetkrystle.com: what's included (45 poems + narration), the 3-minute preview, signing in with a code, devices, offline reading, all sales final, contact.
+- **Install-to-home-screen popup** for buyers (Android/desktop install button, iPhone "Share → Add to Home Screen" steps). Check the R2 bucket size first so any offline wording is accurate; a full "download for offline" option is a bigger follow-up.
+- **Unlock by product, not by one price ID.** Change the purchase check to accept any price on the digital book's Stripe product, so new prices, currencies or sales never lock buyers out. Do this before creating any new price.
+- **Rupiah price.** Adaptive Pricing handles IDR for now. For a clean fixed amount, do the item above first, then create a new price with an IDR currency option.
+- **Promotion codes.** Coupons + codes in Stripe, then "Allow promotion codes" on the Payment Link. 100%-off codes already unlock the book. Use one code per channel (IG, events, newsletter) to see where sales come from.
+- **Contact and Privacy pages** on kismetkrystle.com, so Stripe's support / privacy URLs each point somewhere specific (they all point to the Terms page today).
+- **Business address and phone** for Stripe's public details (PO box or virtual mailbox; Google Voice number) instead of personal ones. Hidden for now.
+- **Second digital book Payment Link.** Stripe shows two; keep the one ending `14AeVe19WcfZ16pg0v8N202`. Deactivate the other after checking it isn't printed or shared anywhere.
+- **Clean up unused files:** the 25 sample page images in KK-Main `public/assets/sample/`, and the old bento homepage, audio and dashboard pages in this repo.
+- **Newsletter sending.** Signups are saved in Cloudflare D1 but nothing sends to them yet; pick a tool (Resend Broadcasts, Kit, Beehiiv, Brevo).
+- **Resend plan.** Free tier is 100 emails/day (sign-in codes + mail sent as hello@). Upgrade before a big launch or event.
