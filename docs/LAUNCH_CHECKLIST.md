@@ -140,6 +140,7 @@ and on refund sets revoked_at so access stops.
 - **Install-to-home-screen popup** for buyers (Android/desktop install button, iPhone "Share → Add to Home Screen" steps). Check the R2 bucket size first so any offline wording is accurate; a full "download for offline" option is a bigger follow-up.
 - **Unlock by product, not by one price ID.** Change the purchase check to accept any price on the digital book's Stripe product, so new prices, currencies or sales never lock buyers out. Do this before creating any new price.
 - **Rupiah price.** Adaptive Pricing handles IDR for now. For a clean fixed amount, do the item above first, then create a new price with an IDR currency option.
+- **Paperback-owner promo code.** A code (e.g. `PAPERBACK`) for a discount on the digital edition, printed on a bookmark or near the book's QR codes, so paperback readers have a reason to add the narrated edition.
 - **Promotion codes.** Coupons + codes in Stripe, then "Allow promotion codes" on the Payment Link. 100%-off codes already unlock the book. Use one code per channel (IG, events, newsletter) to see where sales come from.
 - **Contact and Privacy pages** on kismetkrystle.com, so Stripe's support / privacy URLs each point somewhere specific (they all point to the Terms page today).
 - **Business address and phone** for Stripe's public details (PO box or virtual mailbox; Google Voice number) instead of personal ones. Hidden for now.
