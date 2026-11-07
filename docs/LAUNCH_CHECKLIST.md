@@ -131,6 +131,8 @@ and on refund sets revoked_at so access stops.
 
 ## Later
 
+- **Add tonight's co-hosted event** to the Events section once the flyer is available (free event; the flyer has the details). Send the flyer and Claude will build the card.
+
 - **Enforce the device limit.** The terms already say one reader on up to three devices. The old per-device check (`user_devices` table, removed in the launch) can come back with a limit of 3, plus a "sign out other devices" option for buyers.
 - **Group access** (classrooms, book clubs): handled by email for now; grant extra emails at `/admin/access-grants`.
 - **Classroom / group licence as a paid product.** Decide pricing (per class or per student) and how to sell it (Payment Link or invoice).
