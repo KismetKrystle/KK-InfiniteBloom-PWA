@@ -157,8 +157,9 @@ export default function CodeSignInForm({ next, lockedEmail, requestCode, autoSen
           ref={codeInput}
           inputMode="numeric"
           autoComplete="one-time-code"
+          // No maxLength: it would truncate a pasted " 482 913" before the
+          // non-digits are stripped below, leaving 5 digits and a dead button.
           pattern="[0-9]{6}"
-          maxLength={6}
           placeholder="••••••"
           value={code}
           onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
