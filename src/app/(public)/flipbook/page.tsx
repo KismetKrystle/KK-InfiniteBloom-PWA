@@ -8,7 +8,7 @@ import FlipbookPage from "@/components/FlipbookPage"
 const BOOK_SLUG = "kismet-krystle"
 
 // Everyone lands on the reader: buyers read the whole book, everyone else
-// gets the 3-minute preview and then the buy / sign-in panel.
+// gets the 2-minute preview and then the buy / sign-in panel.
 export default async function FlipbookRoute() {
   const session = await auth.api.getSession({ headers: await headers() })
   const book = session ? await resolveBook(BOOK_SLUG) : undefined

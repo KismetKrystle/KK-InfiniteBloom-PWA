@@ -1,6 +1,6 @@
 # Digital book launch checklist
 
-What this sets up: the **Digital Book** button on kismetkrystle.com opens `read.kismetkrystle.com/flipbook`. Visitors read the real book, narration included, for 3 minutes, then get **Get your copy · $20** (Stripe) or **Sign in**. After paying they land on `/welcome`, a 6-digit code is emailed to them, they type it in, and the whole book opens. They stay signed in for 90 days.
+What this sets up: the **Digital Book** button on kismetkrystle.com opens `read.kismetkrystle.com/flipbook`. Visitors read the real book, narration included, for 2 minutes, then get **Get your copy · $20** (Stripe) or **Sign in**. After paying they land on `/welcome`, a 6-digit code is emailed to them, they type it in, and the whole book opens. They stay signed in for 90 days.
 
 Do the parts **in order**. Each one ends with a ✅ check. Don't move on until the check passes.
 
@@ -65,7 +65,7 @@ Right now emails come from `onboarding@resend.dev`. Resend only delivers that ad
 
 You can delete `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`. Google sign-in is gone.
 
-Already set and unchanged: `DATABASE_URL`, `BETTER_AUTH_SECRET`, `RESEND_API_KEY`, `PREVIEW_COOKIE_SECRET` (it signs the 3-minute preview timer — the old preview used it too, so check it's still there), and all `R2_*` values.
+Already set and unchanged: `DATABASE_URL`, `BETTER_AUTH_SECRET`, `RESEND_API_KEY`, `PREVIEW_COOKIE_SECRET` (it signs the preview timer — the old preview used it too, so check it's still there), and all `R2_*` values.
 
 ## Part 5 — Deploy the code
 
@@ -73,7 +73,7 @@ Both repos have the work on branch `claude/flipbook-purchase-access-3t5bki`.
 
 1. **Preview first (optional but smart):** Vercel builds a preview of the branch automatically. Its URL is in Vercel → Deployments. Cloudflare does the same for KK-Main (Worker → Deployments → preview URL). Click around both.
 2. **Go live:** on GitHub, open each repo → **Pull requests → New** → base `main` ← compare `claude/flipbook-purchase-access-3t5bki` → **Create** → **Merge**. Do the **PWA first, then KK-Main**, so the "Open your book" links work the moment they appear.
-3. ✅ In a private window, `https://read.kismetkrystle.com` opens the book with **PREVIEW · 3:00 LEFT** at the top. After 3 minutes of reading, **KEEP READING.** appears with the buy and sign-in options.
+3. ✅ In a private window, `https://read.kismetkrystle.com` opens the book with **PREVIEW · 2:00 LEFT** at the top. After 2 minutes of reading, **KEEP READING.** appears with the buy and sign-in options.
 4. ✅ On kismetkrystle.com, **Read a few pages** shows two page spreads and a **Get the digital book · $20** button.
 
 ## Part 6 — Stripe
@@ -126,7 +126,7 @@ and on refund sets revoked_at so access stops.
 
 - **Coming back later or on a new device:** read.kismetkrystle.com → enter email → type the code. No passwords. The terms allow one reader on up to three devices (not enforced in code yet; see "Later" below). The code is typed on the device they're using, so it also works inside an installed home-screen app.
 - **Someone bought with a different email:** add their real email at `/admin/access-grants`.
-- **Preview:** 3 minutes of active reading per browser (it pauses when the tab is in the background). Someone determined could restart it in a private window — an accepted trade-off for letting people hear the real book.
+- **Preview:** 2 minutes of active reading (shortened from 3 on 11 Nov 2026) per browser (it pauses when the tab is in the background). Someone determined could restart it in a private window — an accepted trade-off for letting people hear the real book.
 - **Turned off for now:** the device limit, password and Google sign-in, the audio page (`/audio` redirects to the book), and the old bento homepage (`/` redirects to the book). The code for audio and the homepage is still in the repo.
 
 ## Later
@@ -135,9 +135,10 @@ and on refund sets revoked_at so access stops.
 - **Enforce the device limit.** The terms already say one reader on up to three devices. The old per-device check (`user_devices` table, removed in the launch) can come back with a limit of 3, plus a "sign out other devices" option for buyers.
 - **Group access** (classrooms, book clubs): handled by email for now; grant extra emails at `/admin/access-grants`.
 - **Classroom / group licence as a paid product.** Decide pricing (per class or per student) and how to sell it (Payment Link or invoice).
-- **Digital book FAQ** on kismetkrystle.com: what's included (45 poems + narration), the 3-minute preview, signing in with a code, devices, offline reading, all sales final, contact.
+- **Digital book FAQ** on kismetkrystle.com: what's included (45 poems + narration), the 2-minute preview, signing in with a code, devices, offline reading, all sales final, contact.
 - **Promo video for the digital edition.** 30 to 60 seconds, vertical, captioned: page turns plus narration, ending on kismetkrystle.com. Embed it in the book section next to "Digital Edition" (YouTube/Vimeo, or a small file under 25 MB), loading only on play. Reuse it on socials and at events. Lets people see how it works without more free reading.
-- **Daily (or weekly) preview refresh.** Reset the 3-minute preview 24 hours after a visitor's preview started, and tell them on the "Keep reading" panel when it refreshes ("Your free preview refreshes in about 14 hours, or keep reading now for $20"). Server-counted, buyers unaffected.
+- **Preview-to-purchase count.** Record each preview started (one per browser) next to Stripe purchases, and show both on an admin page: "X previews started, Y bought". Optionally also how far into the 2 minutes people got. Use it to test 2 vs 3 minutes, or the promo video, with real numbers.
+- **Daily (or weekly) preview refresh.** Reset the 2-minute preview 24 hours after a visitor's preview started, and tell them on the "Keep reading" panel when it refreshes ("Your free preview refreshes in about 14 hours, or keep reading now for $20"). Server-counted, buyers unaffected.
 - **Install-to-home-screen popup** for buyers (Android/desktop install button, iPhone "Share → Add to Home Screen" steps). Check the R2 bucket size first so any offline wording is accurate; a full "download for offline" option is a bigger follow-up.
 - **Unlock by product, not by one price ID.** Change the purchase check to accept any price on the digital book's Stripe product, so new prices, currencies or sales never lock buyers out. Do this before creating any new price.
 - **Rupiah price.** Adaptive Pricing handles IDR for now. For a clean fixed amount, do the item above first, then create a new price with an IDR currency option.
