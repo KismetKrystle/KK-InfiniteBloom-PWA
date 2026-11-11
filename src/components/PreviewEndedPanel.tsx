@@ -6,7 +6,7 @@ import SignOutButton from './SignOutButton'
 import KKArrow from './KKArrow'
 import { BOOK_PAYMENT_LINK } from '@/lib/book-links'
 
-// Shown over the reader once the 3-minute preview is used up. Not
+// Shown over the reader once the 2-minute preview is used up. Not
 // dismissible: the only ways forward are buying or signing in as a buyer.
 export default function PreviewEndedPanel({
   user,

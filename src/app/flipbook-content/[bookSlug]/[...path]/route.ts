@@ -48,7 +48,7 @@ export async function GET(
   }
 
   // Buyers get everything. Everyone else reads the real book only while
-  // their 3-minute preview lasts; the time itself is counted by the
+  // their 2-minute preview lasts; the time itself is counted by the
   // heartbeat route, this just checks it and plants the cookie on a
   // visitor's very first request.
   const purchased = await hasPurchased(session?.user, book.id)

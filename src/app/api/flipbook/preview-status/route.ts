@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth"
 import { PREVIEW_DURATION_S, previewCookieName, resolveBook, hasPurchased, verifyPreviewCookie } from "@/lib/flipbook-access"
 
 // Lets the page check the preview before loading the reader, so a visitor
-// whose 3 minutes ran out on an earlier visit sees the "get your copy"
+// whose 2 minutes ran out on an earlier visit sees the "get your copy"
 // prompt straight away instead of a reader that fails to load.
 export async function GET(request: NextRequest) {
   const bookSlug = request.nextUrl.searchParams.get("bookSlug")

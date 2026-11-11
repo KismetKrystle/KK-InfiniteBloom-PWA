@@ -28,7 +28,7 @@ function formatRemaining(seconds: number) {
 
 // Buyers get the whole book with everything else tucked away: account
 // actions in the top-right menu, Reflections behind the floating bubble.
-// Everyone else gets the same reader for a 3-minute preview, then the
+// Everyone else gets the same reader for a 2-minute preview, then the
 // "get your copy / sign in" panel.
 export default function FlipbookPage({ user, hasAccess, bookSlug }: FlipbookPageProps) {
   const [isFullScreen, setIsFullScreen] = useState(false)

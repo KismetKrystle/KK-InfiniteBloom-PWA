@@ -1,13 +1,13 @@
 import { createHmac, timingSafeEqual } from "crypto"
 import { sql } from "@/lib/db"
 
-// Anyone who isn't a buyer gets a 3-minute *active* preview of the real
+// Anyone who isn't a buyer gets a 2-minute *active* preview of the real
 // reader (narration included), then the "get your copy" prompt. The client
 // pings /api/flipbook/preview-heartbeat every tick while the book is open
 // and the tab is visible; each accepted ping adds exactly this many seconds
 // to the signed cookie's usedS — never a client-supplied duration — so the
 // budget can't be inflated, and it stops the moment the tab is backgrounded.
-export const PREVIEW_DURATION_S = 180
+export const PREVIEW_DURATION_S = 120
 export const PREVIEW_HEARTBEAT_TICK_S = 5
 export const PREVIEW_COOKIE_MAX_AGE_S = 60 * 60 * 24 * 400 // ~400 days (browsers cap cookie lifetime around here)
 
