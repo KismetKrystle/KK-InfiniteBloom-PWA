@@ -7,6 +7,7 @@ import ExperienceShareDialog from './ExperienceShareDialog'
 import CommentSection from './CommentSection'
 import ReaderAccountMenu from './ReaderAccountMenu'
 import PWAInstallButton from './PWAInstallButton'
+import IosInstallTip, { getIosInstallState } from './IosInstallTip'
 import PreviewEndedPanel from './PreviewEndedPanel'
 import KKArrow from './KKArrow'
 import { BOOK_LOGO_URL, BOOK_PAYMENT_LINK, MAIN_SITE_URL } from '@/lib/book-links'
@@ -32,6 +33,13 @@ function formatRemaining(seconds: number) {
 // "get your copy / sign in" panel.
 export default function FlipbookPage({ user, hasAccess, bookSlug }: FlipbookPageProps) {
   const [isFullScreen, setIsFullScreen] = useState(false)
+  const [installTipOpen, setInstallTipOpen] = useState(false)
+  // iPhones can't one-tap install, so the account menu offers the steps there.
+  const [canShowIosTip, setCanShowIosTip] = useState(false)
+  useEffect(() => {
+    const state = getIosInstallState()
+    setCanShowIosTip(state === 'can-install' || state === 'in-app-browser')
+  }, [])
   const [reflectionsOpen, setReflectionsOpen] = useState(false)
   const [reflectionCount, setReflectionCount] = useState<number | null>(null)
   const [preview, setPreview] = useState<'checking' | 'reading' | 'ended'>(hasAccess ? 'reading' : 'checking')
@@ -130,8 +138,8 @@ export default function FlipbookPage({ user, hasAccess, bookSlug }: FlipbookPage
     <div className="kk h-dvh flex flex-col">
       {!isFullScreen && (
         <header className="shrink-0 flex items-center gap-4 min-h-[72px] sm:min-h-[88px] px-4 sm:px-7 border-b kk-rule">
-          <a href={MAIN_SITE_URL} className="flex items-center gap-4 shrink-0" title="Back to kismetkrystle.com">
-            <img src={BOOK_LOGO_URL} alt="The Infinite Bloom — back to kismetkrystle.com" className="h-14 sm:h-[72px] w-auto" />
+          <a href={MAIN_SITE_URL} className="flex items-center gap-4 min-w-0 overflow-hidden" title="Back to kismetkrystle.com">
+            <img src={BOOK_LOGO_URL} alt="The Infinite Bloom" className="h-14 sm:h-[72px] w-auto max-w-[45vw] object-contain" />
             <span className="hidden md:inline text-[20px] font-black tracking-[-1px] whitespace-nowrap">KISMET / KRYSTLE</span>
           </a>
 
@@ -165,7 +173,11 @@ export default function FlipbookPage({ user, hasAccess, bookSlug }: FlipbookPage
               </button>
             )}
             {user ? (
-              <ReaderAccountMenu user={user} isBuyer={hasAccess} />
+              <ReaderAccountMenu
+                user={user}
+                isBuyer={hasAccess}
+                onShowInstallTip={hasAccess && canShowIosTip ? () => setInstallTipOpen(true) : undefined}
+              />
             ) : (
               <a href="/login?callbackUrl=%2Fflipbook" className="kk-text-link text-xs ml-2">
                 Sign in
@@ -243,6 +255,8 @@ export default function FlipbookPage({ user, hasAccess, bookSlug }: FlipbookPage
           ) : null}
         </button>
       )}
+
+      {hasAccess && !isFullScreen && <IosInstallTip open={installTipOpen} onOpenChange={setInstallTipOpen} />}
 
       {hasAccess && user && (
         <Sheet open={reflectionsOpen} onOpenChange={setReflectionsOpen}>

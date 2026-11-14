@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { User, Mail, LogOut } from 'lucide-react'
+import { User, Mail, LogOut, SquarePlus } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -19,10 +19,13 @@ const MAX_NOTE_LENGTH = 2000
 export default function ReaderAccountMenu({
   user,
   isBuyer,
+  onShowInstallTip,
 }: {
   user: { name: string | null; email: string }
   // Notes to Kismet are a reader perk; the API refuses everyone else.
   isBuyer: boolean
+  // Only passed on iPhone/iPad, where there's no one-tap install.
+  onShowInstallTip?: () => void
 }) {
   const router = useRouter()
   const [noteOpen, setNoteOpen] = useState(false)
@@ -51,6 +54,11 @@ export default function ReaderAccountMenu({
               <DropdownMenuItem onSelect={() => setNoteOpen(true)} className="cursor-pointer">
                 <Mail className="w-4 h-4" /> Write to Kismet
               </DropdownMenuItem>
+              {onShowInstallTip && (
+                <DropdownMenuItem onSelect={onShowInstallTip} className="cursor-pointer">
+                  <SquarePlus className="w-4 h-4" /> Add to Home Screen
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
             </>
           )}
