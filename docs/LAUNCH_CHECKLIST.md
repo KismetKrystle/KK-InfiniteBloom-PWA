@@ -1,6 +1,6 @@
 # Digital book launch checklist
 
-What this sets up: the **Digital Book** button on kismetkrystle.com opens `read.kismetkrystle.com/flipbook`. Visitors read the real book, narration included, for 2 minutes, then get **Get your copy · $20** (Stripe) or **Sign in**. After paying they land on `/welcome`, a 6-digit code is emailed to them, they type it in, and the whole book opens. They stay signed in for 90 days.
+What this sets up: the **Digital Book** button on kismetkrystle.com opens `read.kismetkrystle.com/flipbook`. Visitors read the real book, narration included, for 2 minutes, then get **Get your copy · $15** (Stripe) or **Sign in**. After paying they land on `/welcome`, a 6-digit code is emailed to them, they type it in, and the whole book opens. They stay signed in for 90 days.
 
 Do the parts **in order**. Each one ends with a ✅ check. Don't move on until the check passes.
 
@@ -140,8 +140,8 @@ and on refund sets revoked_at so access stops.
 - **Preview-to-purchase count.** Record each preview started (one per browser) next to Stripe purchases, and show both on an admin page: "X previews started, Y bought". Optionally also how far into the 2 minutes people got. Use it to test 2 vs 3 minutes, or the promo video, with real numbers.
 - **Daily (or weekly) preview refresh.** Reset the 2-minute preview 24 hours after a visitor's preview started, and tell them on the "Keep reading" panel when it refreshes ("Your free preview refreshes in about 14 hours, or keep reading now for $20"). Server-counted, buyers unaffected.
 - **Install-to-home-screen popup:** iPhone/iPad tip is done (Share → Add to Home Screen steps, in-app-browser warning, menu item). Still to do: a full "download for offline" option, once the R2 size is known.
-- **Unlock by product, not by one price ID.** Change the purchase check to accept any price on the digital book's Stripe product, so new prices, currencies or sales never lock buyers out. Do this before creating any new price.
-- **Rupiah price.** Adaptive Pricing handles IDR for now. For a clean fixed amount, do the item above first, then create a new price with an IDR currency option.
+- **Unlock by product:** done. Any price on the digital book's Stripe product unlocks it (new amounts, currencies, sale prices, or the book added to the in-person order). If the USD price changes, update `BOOK_PRICE_LABEL` in `src/lib/book-links.ts`.
+- **Fixed IDR / JPY prices:** add currencies on a new price of the same products in Stripe, then new Payment Links (digital: welcome redirect + terms checkbox; in-person: digital edition as a recommended product + confirmation message). Send the new links so the site buttons and `BOOK_PAYMENT_LINK` can be updated.
 - **Paperback-owner promo code.** A code (e.g. `PAPERBACK`) for a discount on the digital edition, printed on a bookmark or near the book's QR codes, so paperback readers have a reason to add the narrated edition.
 - **Promotion codes.** Coupons + codes in Stripe, then "Allow promotion codes" on the Payment Link. 100%-off codes already unlock the book. Use one code per channel (IG, events, newsletter) to see where sales come from.
 - **Contact and Privacy pages** on kismetkrystle.com, so Stripe's support / privacy URLs each point somewhere specific (they all point to the Terms page today).

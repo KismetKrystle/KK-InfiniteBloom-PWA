@@ -60,7 +60,7 @@ async function handleEvent(event: Stripe.Event) {
     // Payment Link checkouts (the buy button on kismetkrystle.com) have no
     // account metadata — they unlock the book by the buyer's email instead.
     if (!authUserId || !productId || !tenantId) {
-      await grantAccessFromCheckout(checkoutSession.id)
+      await grantAccessFromCheckout(checkoutSession.id, { notify: true })
       return
     }
 

@@ -10,7 +10,7 @@ import PWAInstallButton from './PWAInstallButton'
 import IosInstallTip, { getIosInstallState } from './IosInstallTip'
 import PreviewEndedPanel from './PreviewEndedPanel'
 import KKArrow from './KKArrow'
-import { BOOK_LOGO_URL, BOOK_PAYMENT_LINK, MAIN_SITE_URL } from '@/lib/book-links'
+import { BOOK_LOGO_URL, BOOK_PAYMENT_LINK, BOOK_PRICE_LABEL, MAIN_SITE_URL } from '@/lib/book-links'
 
 // Must match PREVIEW_HEARTBEAT_TICK_S in src/lib/flipbook-access.ts — the
 // server is the source of truth for the budget; this only paces check-ins.
@@ -149,7 +149,7 @@ export default function FlipbookPage({ user, hasAccess, bookSlug }: FlipbookPage
                 Preview · {formatRemaining(remainingS)} left
               </span>
               <a href={BOOK_PAYMENT_LINK} className="kk-text-link text-xs">
-                Get your copy · $20 <KKArrow />
+                Get your copy · {BOOK_PRICE_LABEL} <KKArrow />
               </a>
             </div>
           )}
@@ -192,7 +192,7 @@ export default function FlipbookPage({ user, hasAccess, bookSlug }: FlipbookPage
         <div className="sm:hidden flex items-center justify-between px-4 py-2 border-b kk-rule">
           <span className="kk-micro">Preview · {formatRemaining(remainingS)} left</span>
           <a href={BOOK_PAYMENT_LINK} className="kk-text-link text-xs">
-            Get your copy · $20
+            Get your copy · {BOOK_PRICE_LABEL}
           </a>
         </div>
       )}
