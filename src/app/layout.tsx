@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: "Kismet Krystle | Poet & Speaker | Infinite Bloom Author",
   description:
-    "Infinite Bloom: 45 poems by Kismet Krystle, an award-winning poet & speaker. Read, listen, and explore 143 reflective insights. Available as digital flipbook ($20) and full-color physical book ($33).",
+    "Infinite Bloom: 45 poems by Kismet Krystle, an award-winning poet & speaker. Read, listen, and explore 143 reflective insights. Available as a narrated digital edition ($15) and a full-color paperback ($20).",
   keywords: ["poetry book", "spoken word", "Kismet Krystle", "audio poems", "digital book"],
   manifest: "/manifest.json",
   appleWebApp: {

@@ -4,10 +4,10 @@
 // Shown on the reader's buy buttons. Stripe shows each visitor the real
 // amount in their own currency at checkout; update this if the USD price
 // changes.
-export const BOOK_PRICE_LABEL = "$20"
+export const BOOK_PRICE_LABEL = "$15"
 
 // The "Buy Digital Book" Stripe Payment Link.
-export const BOOK_PAYMENT_LINK = "https://buy.stripe.com/14AeVe19WcfZ16pg0v8N202"
+export const BOOK_PAYMENT_LINK = "https://buy.stripe.com/8x26oIbOA1BlcP73dJ8N204"
 
 export const MAIN_SITE_URL = "https://www.kismetkrystle.com"
 

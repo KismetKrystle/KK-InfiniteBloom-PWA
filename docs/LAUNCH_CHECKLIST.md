@@ -1,6 +1,6 @@
 # Digital book launch checklist
 
-What this sets up: the **Digital Book** button on kismetkrystle.com opens `read.kismetkrystle.com/flipbook`. Visitors read the real book, narration included, for 2 minutes, then get **Get your copy · $20** (Stripe) or **Sign in**. After paying they land on `/welcome`, a 6-digit code is emailed to them, they type it in, and the whole book opens. They stay signed in for 90 days.
+What this sets up: the **Digital Book** button on kismetkrystle.com opens `read.kismetkrystle.com/flipbook`. Visitors read the real book, narration included, for 2 minutes, then get **Get your copy · $15** (Stripe) or **Sign in**. After paying they land on `/welcome`, a 6-digit code is emailed to them, they type it in, and the whole book opens. They stay signed in for 90 days.
 
 Do the parts **in order**. Each one ends with a ✅ check. Don't move on until the check passes.
 
