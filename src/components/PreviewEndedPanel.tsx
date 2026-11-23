@@ -4,7 +4,7 @@ import { useState } from 'react'
 import CodeSignInForm from './CodeSignInForm'
 import SignOutButton from './SignOutButton'
 import KKArrow from './KKArrow'
-import { BOOK_PAYMENT_LINK } from '@/lib/book-links'
+import { BOOK_PAYMENT_LINK, BOOK_PRICE_LABEL } from '@/lib/book-links'
 
 // Shown over the reader once the 2-minute preview is used up. Not
 // dismissible: the only ways forward are buying or signing in as a buyer.
@@ -34,7 +34,7 @@ export default function PreviewEndedPanel({
         </div>
 
         <a href={BOOK_PAYMENT_LINK} className="kk-solid w-full">
-          Get your copy · $20 <KKArrow />
+          Get your copy · {BOOK_PRICE_LABEL} <KKArrow />
         </a>
 
         <div className="border-t kk-rule pt-6 space-y-4">
