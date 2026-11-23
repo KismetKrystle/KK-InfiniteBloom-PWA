@@ -131,22 +131,4 @@ and on refund sets revoked_at so access stops.
 
 ## Later
 
-
-- **Enforce the device limit.** The terms already say one reader on up to three devices. The old per-device check (`user_devices` table, removed in the launch) can come back with a limit of 3, plus a "sign out other devices" option for buyers.
-- **Group access** (classrooms, book clubs): handled by email for now; grant extra emails at `/admin/access-grants`.
-- **Classroom / group licence as a paid product.** Decide pricing (per class or per student) and how to sell it (Payment Link or invoice).
-- **Digital book FAQ** on kismetkrystle.com: what's included (45 poems + narration), the 2-minute preview, signing in with a code, devices, offline reading, all sales final, contact.
-- **Promo video for the digital edition.** 30 to 60 seconds, vertical, captioned: page turns plus narration, ending on kismetkrystle.com. Embed it in the book section next to "Digital Edition" (YouTube/Vimeo, or a small file under 25 MB), loading only on play. Reuse it on socials and at events. Lets people see how it works without more free reading.
-- **Preview-to-purchase count.** Record each preview started (one per browser) next to Stripe purchases, and show both on an admin page: "X previews started, Y bought". Optionally also how far into the 2 minutes people got. Use it to test 2 vs 3 minutes, or the promo video, with real numbers.
-- **Daily (or weekly) preview refresh.** Reset the 2-minute preview 24 hours after a visitor's preview started, and tell them on the "Keep reading" panel when it refreshes ("Your free preview refreshes in about 14 hours, or keep reading now for $20"). Server-counted, buyers unaffected.
-- **Install-to-home-screen popup:** iPhone/iPad tip is done (Share → Add to Home Screen steps, in-app-browser warning, menu item). Still to do: a full "download for offline" option, once the R2 size is known.
-- **Unlock by product:** done. Any price on the digital book's Stripe product unlocks it (new amounts, currencies, sale prices, or the book added to the in-person order). If the USD price changes, update `BOOK_PRICE_LABEL` in `src/lib/book-links.ts`.
-- **Fixed IDR / JPY prices:** add currencies on a new price of the same products in Stripe, then new Payment Links (digital: welcome redirect + terms checkbox; in-person: digital edition as a recommended product + confirmation message). Send the new links so the site buttons and `BOOK_PAYMENT_LINK` can be updated.
-- **Paperback-owner promo code.** A code (e.g. `PAPERBACK`) for a discount on the digital edition, printed on a bookmark or near the book's QR codes, so paperback readers have a reason to add the narrated edition.
-- **Promotion codes.** Coupons + codes in Stripe, then "Allow promotion codes" on the Payment Link. 100%-off codes already unlock the book. Use one code per channel (IG, events, newsletter) to see where sales come from.
-- **Contact and Privacy pages** on kismetkrystle.com, so Stripe's support / privacy URLs each point somewhere specific (they all point to the Terms page today).
-- **Business address and phone** for Stripe's public details (PO box or virtual mailbox; Google Voice number) instead of personal ones. Hidden for now.
-- **Second digital book Payment Link.** Stripe shows two; keep the one ending `14AeVe19WcfZ16pg0v8N202`. Deactivate the other after checking it isn't printed or shared anywhere.
-- **Clean up unused files:** the 25 sample page images in KK-Main `public/assets/sample/`, and the old bento homepage, audio and dashboard pages in this repo.
-- **Newsletter sending.** Signups are saved in Cloudflare D1 but nothing sends to them yet; pick a tool (Resend Broadcasts, Kit, Beehiiv, Brevo).
-- **Resend plan.** Free tier is 100 emails/day (sign-in codes + mail sent as hello@). Upgrade before a big launch or event.
+Planned work and the build log now live in the main site repo: [`KK-Main/docs/ROADMAP.md`](https://github.com/KismetKrystle/KK-Main/blob/main/docs/ROADMAP.md) and [`KK-Main/docs/PROGRESS.md`](https://github.com/KismetKrystle/KK-Main/blob/main/docs/PROGRESS.md).
