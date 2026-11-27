@@ -59,6 +59,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <link rel="preconnect" href="https://res.cloudinary.com" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
+        {/* Chrome fires beforeinstallprompt once, often before React has
+            hydrated, so it's caught here and handed to PWAInstallButton. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__ibInstallPrompt=e;window.dispatchEvent(new Event('ib-installable'))});",
+          }}
+        />
       </head>
       <body>{children}</body>
     </html>

@@ -27,20 +27,24 @@ export default function PWAInstallButton() {
       return
     }
 
-    function handleBeforeInstallPrompt(e: Event) {
-      e.preventDefault()
-      setInstallPrompt(e as BeforeInstallPromptEvent)
+    // The event is captured by an inline script in the root layout (it can
+    // fire before this component mounts); pick up whatever it caught.
+    const w = window as Window & { __ibInstallPrompt?: BeforeInstallPromptEvent | null }
+    function syncPrompt() {
+      if (w.__ibInstallPrompt) setInstallPrompt(w.__ibInstallPrompt)
     }
 
     function handleAppInstalled() {
       setIsInstalled(true)
       setInstallPrompt(null)
+      w.__ibInstallPrompt = null
     }
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+    syncPrompt()
+    window.addEventListener('ib-installable', syncPrompt)
     window.addEventListener('appinstalled', handleAppInstalled)
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+      window.removeEventListener('ib-installable', syncPrompt)
       window.removeEventListener('appinstalled', handleAppInstalled)
     }
   }, [])
@@ -49,10 +53,12 @@ export default function PWAInstallButton() {
     if (!installPrompt) return
     await installPrompt.prompt()
     const { outcome } = await installPrompt.userChoice
-    if (outcome === 'accepted') {
-      setInstallPrompt(null)
-      if (!isMobileDevice()) setShowDesktopTip(true)
-    }
+    // A prompt can only be shown once. If they cancel, Chrome sends a fresh
+    // one later (picked up through the 'ib-installable' event).
+    const w = window as Window & { __ibInstallPrompt?: BeforeInstallPromptEvent | null }
+    w.__ibInstallPrompt = null
+    setInstallPrompt(null)
+    if (outcome === 'accepted' && !isMobileDevice()) setShowDesktopTip(true)
   }
 
   return (
